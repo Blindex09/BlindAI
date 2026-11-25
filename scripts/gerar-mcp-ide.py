@@ -77,7 +77,7 @@ def alvos() -> dict:
     return {
         "vscode": APPDATA / "Code" / "User" / "mcp.json",
         "cursor": HOME / ".cursor" / "mcp.json",
-        "antigravity": HOME / ".gemini" / "antigravity" / "mcp_config.json",
+        "antigravity": HOME / ".gemini" / "config" / "mcp_config.json",
         "codex": HOME / ".codex" / "config.toml",
     }
 

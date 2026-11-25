@@ -16,6 +16,8 @@ uiautomation==2.0.29
 faster-whisper==1.2.1
 # O PyAV 17+ quebra o faster-whisper 1.2.1 (av.open sem metadata_errors). So e usado para audio que nao seja WAV.
 av>=14,<17
+# BlindAudio: metadados, legendas e audio do YouTube
+yt-dlp==2026.10.26
 
 # Gmail e Drive (blind-google)
 google-api-python-client==2.202.0

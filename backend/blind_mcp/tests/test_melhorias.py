@@ -50,10 +50,10 @@ def test_diario_marca_acao_sem_fim(tmp_path, monkeypatch):
 # ------------------------------ guia x realidade ------------------------------
 
 def _tools_reais() -> set:
-    from blind_mcp.servers import agent_desktop, channels, docs, drive, mail, memory, schedule, speech, stt
+    from blind_mcp.servers import agent_desktop, audio, channels, docs, drive, gallery, mail, memory, schedule, speech, stt, tube
 
     nomes = set()
-    for mod in (agent_desktop, channels, docs, drive, mail, memory, schedule, speech, stt, system, blind):
+    for mod in (agent_desktop, audio, channels, docs, drive, gallery, mail, memory, schedule, speech, stt, system, blind, tube):
         nomes |= {t.name for t in mod.mcp._tool_manager.list_tools()}
     return nomes
 
@@ -649,7 +649,7 @@ def test_gerador_poe_so_o_proxy_nos_servidores_pesados_e_deixa_memoria_e_sistema
     out = subprocess.run([_sys.executable, str(root / "scripts" / "gerar-mcp-claude.py"), "--stdout"], capture_output=True, text=True,
                          timeout=60).stdout
     servers = _json.loads(out[: out.index("deny:")])["mcpServers"]
-    for lazy in ("agent-desktop", "blind-docs", "blind-channels", "blind-speech", "windows", "blind-commander"):
+    for lazy in ("agent-desktop", "blind-docs", "blind-audio", "blind-tube", "blind-gallery", "blind-channels", "blind-speech", "windows", "blind-commander"):
         assert servers[lazy]["args"][:3] == ["-m", "blind_mcp.lazy_proxy", "--server"] and servers[lazy]["args"][3] == lazy
     for eager in ("blind", "blind-memory", "blind-schedule", "blind-system"):  # lembretes e vigia precisam estar rodando desde o inicio
         assert "lazy_proxy" not in " ".join(servers[eager]["args"])

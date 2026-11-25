@@ -47,6 +47,33 @@
       "writer_draft",
       "writer_save"
     ],
+    "blind-audio": [
+      "blindaudio",
+      "blindaudio_info",
+      "blindaudio_listen"
+    ],
+    "blind-tube": [
+      "blindtube_convert_audio",
+      "blindtube_download",
+      "blindtube_info",
+      "blindtube_search",
+      "blindtube_summarize"
+    ],
+    "blind-gallery": [
+      "blindgallery_albums",
+      "blindgallery_confirm_save",
+      "blindgallery_discard_capture",
+      "blindgallery_list",
+      "blindgallery_mark_safe",
+      "blindgallery_remove",
+      "blindgallery_save_note",
+      "blindgallery_scan",
+      "blindgallery_search",
+      "blindgallery_view",
+      "blindphoto_cameras",
+      "blindphoto_capture",
+      "blindphoto_check_position"
+    ],
     "blind-channels": [
       "canais_configurar",
       "canais_vincular_telegram",

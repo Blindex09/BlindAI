@@ -1,0 +1,604 @@
+{
+  "server": "blind-gallery",
+  "instructions": null,
+  "tools": [
+    {
+      "name": "blindphoto_cameras",
+      "description": "Lista as câmeras conectadas ao computador para uso com blindphoto_capture e blindphoto_check_position.",
+      "inputSchema": {
+        "properties": {},
+        "title": "blindphoto_camerasArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "blindphoto_camerasOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "blindphoto_check_position",
+      "description": "Verifica rapidamente pela webcam onde está o rosto (esquerda, direita, cima, baixo, perto/longe, inclinação e luz) e fala a orientação.",
+      "inputSchema": {
+        "properties": {
+          "camera_name": {
+            "default": "",
+            "title": "Camera Name",
+            "type": "string"
+          },
+          "stability_mode": {
+            "default": "normal",
+            "title": "Stability Mode",
+            "type": "string"
+          },
+          "mirror_horizontal": {
+            "default": false,
+            "title": "Mirror Horizontal",
+            "type": "boolean"
+          },
+          "speak": {
+            "default": true,
+            "title": "Speak",
+            "type": "boolean"
+          }
+        },
+        "title": "blindphoto_check_positionArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "blindphoto_check_positionOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "blindphoto_capture",
+      "description": "Tira uma foto acessível pela câmera com orientação por voz e escolha automática do quadro mais nítido.\n\n`mode`:\n- 'portrait': retrato/selfie com detecção facial em tempo real (esquerda, direita, cima, baixo, distância, cortes, inclinação e parada estável).\n- 'money': notas e moedas de dinheiro (identifica valores e repete por extenso sem recusar).\n- 'text': rótulos, remédios, receitas, embalagens ou documentos.\n- 'object': identificar e descrever objetos na frente da câmera.\n- 'general': foto geral da cena.\n`stability_mode`: 'normal' (padrão), 'gentle' (mais tolerante para tremores ou movimentos involuntários) ou 'strict'.\nPor segurança, a foto vai primeiro para área temporária sem salvar nada definitivo: depois de conferir que não\nhá conteúdo impróprio de sexo ou violência, salve com `blindgallery_confirm_save` (ou descarte com `blindgallery_discard_capture`).\n",
+      "inputSchema": {
+        "properties": {
+          "mode": {
+            "default": "general",
+            "title": "Mode",
+            "type": "string"
+          },
+          "question": {
+            "default": "",
+            "title": "Question",
+            "type": "string"
+          },
+          "guided": {
+            "default": true,
+            "title": "Guided",
+            "type": "boolean"
+          },
+          "stability_mode": {
+            "default": "normal",
+            "title": "Stability Mode",
+            "type": "string"
+          },
+          "hold_seconds": {
+            "default": 2.0,
+            "title": "Hold Seconds",
+            "type": "number"
+          },
+          "timeout_seconds": {
+            "default": 45.0,
+            "title": "Timeout Seconds",
+            "type": "number"
+          },
+          "speak_guidance": {
+            "default": true,
+            "title": "Speak Guidance",
+            "type": "boolean"
+          },
+          "audio_cues": {
+            "default": true,
+            "title": "Audio Cues",
+            "type": "boolean"
+          },
+          "mirror_horizontal": {
+            "default": false,
+            "title": "Mirror Horizontal",
+            "type": "boolean"
+          },
+          "camera_name": {
+            "default": "",
+            "title": "Camera Name",
+            "type": "string"
+          },
+          "album": {
+            "default": "",
+            "title": "Album",
+            "type": "string"
+          },
+          "save_folder": {
+            "default": "",
+            "title": "Save Folder",
+            "type": "string"
+          },
+          "describe_with_vision": {
+            "default": false,
+            "title": "Describe With Vision",
+            "type": "boolean"
+          }
+        },
+        "title": "blindphoto_captureArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "blindgallery_scan",
+      "description": "Cataloga fotos, vídeos e áudios existentes em Imagens, Vídeos, Músicas e Downloads (ou em `folder`) na galeria acessível sem apagar nem mover arquivos.",
+      "inputSchema": {
+        "properties": {
+          "folder": {
+            "default": "",
+            "title": "Folder",
+            "type": "string"
+          },
+          "media_type": {
+            "default": "all",
+            "title": "Media Type",
+            "type": "string"
+          },
+          "max_files": {
+            "default": 300,
+            "title": "Max Files",
+            "type": "integer"
+          }
+        },
+        "title": "blindgallery_scanArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "blindgallery_scanOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "blindgallery_list",
+      "description": "Lista mídias da galeria acessível (do mais recente ao mais antigo) com título, data, álbum e descrição salva.",
+      "inputSchema": {
+        "properties": {
+          "media_type": {
+            "default": "",
+            "title": "Media Type",
+            "type": "string"
+          },
+          "album": {
+            "default": "",
+            "title": "Album",
+            "type": "string"
+          },
+          "favorites_only": {
+            "default": false,
+            "title": "Favorites Only",
+            "type": "boolean"
+          },
+          "undescribed_only": {
+            "default": false,
+            "title": "Undescribed Only",
+            "type": "boolean"
+          },
+          "limit": {
+            "default": 20,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "title": "Offset",
+            "type": "integer"
+          }
+        },
+        "title": "blindgallery_listArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "blindgallery_listOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "blindgallery_search",
+      "description": "Pesquisa fotos, vídeos e áudios na galeria pelo conteúdo descrito, título, tags, álbum ou nome do arquivo.",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "media_type": {
+            "default": "",
+            "title": "Media Type",
+            "type": "string"
+          },
+          "album": {
+            "default": "",
+            "title": "Album",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "blindgallery_searchArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "blindgallery_searchOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "blindgallery_view",
+      "description": "Abre uma foto (ou quadro de vídeo) da galeria pelo id, nome ou caminho para descrever.\n\nSe o arquivo ficou em espera apenas pelo nome suspeito (falso alarme), passe `review_flagged=true`\npara a IA conferir a imagem real e depois aprovar com `blindgallery_mark_safe` ou bloquear de vez\ncom `blindgallery_remove(block_unsafe=true)`. Arquivos já bloqueados nunca abrem mesmo com `review_flagged=true`.\n",
+      "inputSchema": {
+        "properties": {
+          "item": {
+            "title": "Item",
+            "type": "string"
+          },
+          "question": {
+            "default": "",
+            "title": "Question",
+            "type": "string"
+          },
+          "review_flagged": {
+            "default": false,
+            "title": "Review Flagged",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "item"
+        ],
+        "title": "blindgallery_viewArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "blindgallery_mark_safe",
+      "description": "Libera um arquivo que ficou em espera pelo nome após conferência visual (`safe_verified=true`) confirmando que é seguro, admitindo com título limpo.",
+      "inputSchema": {
+        "properties": {
+          "file_path": {
+            "title": "File Path",
+            "type": "string"
+          },
+          "safe_verified": {
+            "default": false,
+            "title": "Safe Verified",
+            "type": "boolean"
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "album": {
+            "default": "",
+            "title": "Album",
+            "type": "string"
+          },
+          "tags": {
+            "default": "",
+            "title": "Tags",
+            "type": "string"
+          },
+          "favorite": {
+            "default": false,
+            "title": "Favorite",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "file_path"
+        ],
+        "title": "blindgallery_mark_safeArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "blindgallery_mark_safeOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "blindgallery_save_note",
+      "description": "Salva ou atualiza título, descrição acessível, álbum, tags (separadas por vírgula) ou favorito de uma mídia da galeria.",
+      "inputSchema": {
+        "properties": {
+          "item": {
+            "title": "Item",
+            "type": "string"
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "album": {
+            "default": "",
+            "title": "Album",
+            "type": "string"
+          },
+          "tags": {
+            "default": "",
+            "title": "Tags",
+            "type": "string"
+          },
+          "favorite": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Favorite"
+          }
+        },
+        "required": [
+          "item"
+        ],
+        "title": "blindgallery_save_noteArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "blindgallery_save_noteOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "blindgallery_confirm_save",
+      "description": "Salva na pasta Imagens e na galeria uma captura pendente, somente após confirmar (safe_verified=true) que não há sexo nem violência.",
+      "inputSchema": {
+        "properties": {
+          "pending_id": {
+            "title": "Pending Id",
+            "type": "string"
+          },
+          "safe_verified": {
+            "default": false,
+            "title": "Safe Verified",
+            "type": "boolean"
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "album": {
+            "default": "",
+            "title": "Album",
+            "type": "string"
+          },
+          "tags": {
+            "default": "",
+            "title": "Tags",
+            "type": "string"
+          },
+          "favorite": {
+            "default": false,
+            "title": "Favorite",
+            "type": "boolean"
+          },
+          "save_folder": {
+            "default": "",
+            "title": "Save Folder",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pending_id"
+        ],
+        "title": "blindgallery_confirm_saveArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "blindgallery_confirm_saveOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "blindgallery_discard_capture",
+      "description": "Descarta imediatamente uma captura temporária sem salvá-la na pasta Imagens nem na galeria (use quando houver conteúdo impróprio ou a pessoa não quiser guardar).",
+      "inputSchema": {
+        "properties": {
+          "pending_id": {
+            "title": "Pending Id",
+            "type": "string"
+          },
+          "reason": {
+            "default": "discarded",
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pending_id"
+        ],
+        "title": "blindgallery_discard_captureArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "blindgallery_discard_captureOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "blindgallery_remove",
+      "description": "Remove uma mídia do catálogo da galeria (sem apagar o arquivo do disco) e opcionalmente bloqueia para sempre (block_unsafe=true) se for conteúdo impróprio.",
+      "inputSchema": {
+        "properties": {
+          "item": {
+            "title": "Item",
+            "type": "string"
+          },
+          "block_unsafe": {
+            "default": false,
+            "title": "Block Unsafe",
+            "type": "boolean"
+          },
+          "reason": {
+            "default": "removed",
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "item"
+        ],
+        "title": "blindgallery_removeArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "blindgallery_removeOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "blindgallery_albums",
+      "description": "Mostra os álbuns e totais da galeria acessível (quantas fotos, vídeos, áudios, favoritos e itens ainda sem descrição).",
+      "inputSchema": {
+        "properties": {},
+        "title": "blindgallery_albumsArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "blindgallery_albumsOutput",
+        "type": "object"
+      }
+    }
+  ]
+}

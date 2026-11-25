@@ -41,6 +41,20 @@ _MEMORY_HINT = re.compile(
     r"\b(lembr\w*|memor\w*|agend\w*|hist[oó]rico|salve|guarde|esquec\w*)\b",
     re.IGNORECASE,
 )
+_AUDIO_HINT = re.compile(
+    r"\b(blindaudio|transcrev\w*|transcri[cç][aã]o|youtube|youtu\.be|podcast\w*|"
+    r"grava[cç][aã]o|grava[cç][oõ]es|legenda\w*|[aá]udio\w*|mp3|wav|m4a|ogg|opus|mp4)\b",
+    re.IGNORECASE,
+)
+_TUBE_HINT = re.compile(
+    r"\b(blindtube|youtube|youtu\.be|baix\w*|convert\w*|mp4|mp3|v[ií]deo\w*|resum\w*)\b",
+    re.IGNORECASE,
+)
+_GALLERY_HINT = re.compile(
+    r"\b(blindgallery|blindgalery|blindphoto|galeria|selfie|retrato|c[aâ]mera|enquadr\w*|"
+    r"dinheiro|nota|notas|moeda\w*|objeto\w*|[aá]lbum|[aá]lbuns|fotos?)\b",
+    re.IGNORECASE,
+)
 
 
 def select_relevant_servers(message: str) -> Optional[List[str]]:
@@ -53,6 +67,12 @@ def select_relevant_servers(message: str) -> Optional[List[str]]:
         selected.extend(["agent-desktop", "windows"])
     if _DOCS_WEB_HINT.search(text):
         selected.append("blind-docs")
+    if _AUDIO_HINT.search(text):
+        selected.append("blind-audio")
+    if _TUBE_HINT.search(text):
+        selected.append("blind-tube")
+    if _GALLERY_HINT.search(text):
+        selected.append("blind-gallery")
     if _CHANNELS_HINT.search(text):
         selected.append("blind-channels")
     if _MEMORY_HINT.search(text):
@@ -67,11 +87,12 @@ def select_relevant_servers(message: str) -> Optional[List[str]]:
 _ACTION_HINT = re.compile(
     r"\b(abr\w*|fech\w*|clic\w*|toqu\w*|aperte|pression\w*|digit\w*|escrev\w*|envi\w*|mand\w*|"
     r"traga|tragam|foco|janela\w*|tela|bandeja|[ií]cone\w*|programa\w*|aplicativ\w*|app|apps|"
-    r"whats\w*|winzapp|telezapp|telegram|youtube|toc\w+|reproduz\w*|copi\w*|cola\w*|"
+    r"whats\w*|winzapp|telezapp|telegram|youtube|youtu\.be|toc\w+|reproduz\w*|copi\w*|cola\w*|"
     r"arquivo\w*|pasta\w*|leia|ler|fal\w+|diga|descrev\w*|captur\w*|screenshot|notifica\w*|"
     r"processo\w*|minimiz\w*|maximiz\w*|rol\w*|navegador|pesquis\w*|busc\w*|menu|bot[aã]o|"
     r"clipboard|[aá]rea de transfer[eê]ncia|volume|mouse|teclado|atalho\w*|ativ\w+|"
     r"pdf|documento\w*|formul[aá]rio\w*|preench\w*|site|p[aá]gina|web|not[ií]cia\w*|"
+    r"blindaudio|blindtube|blindgallery|blindgalery|blindphoto|galeria|selfie|retrato|c[aâ]mera|enquadr\w*|dinheiro|moeda\w*|[aá]lbum|[aá]lbuns|baix\w*|convert\w*|transcrev\w*|transcri[cç][aã]o|podcast\w*|grava[cç][aã]o|grava[cç][oõ]es|legenda\w*|"
     r"lembr\w*|memor\w*|agend\w*|hist[oó]rico|conversa\w*|fatura\w*|boleto\w*|[aá]udio\w*|fotos?)\b",
     re.IGNORECASE,
 )
@@ -95,10 +116,13 @@ SYSTEM_PROMPT = (
     "(@ref_id ou coordenada/atalho) e verifique o resultado.\n"
     "4. Para PDFs (inclusive escaneados com OCR, formularios preenchiveis ou juntar/dividir) e leitura limpa de paginas web "
     "sem anuncios, use blind-docs (read_document, pdf_forms, pdf_fill, pdf_merge_split, web_search, web_read).\n"
-    "5. Para lembrar preferencias/dados da pessoa ou buscar em conversas antigas, use blind-memory (memory_save, "
+    "5. Para transcrever audios/videos locais ou videos do YouTube (legendas ou Whisper small local, ou preparar audio para ouvir), use blind-audio (blindaudio, blindaudio_listen, blindaudio_info).\n"
+    "6. Para pesquisar ou resumir videos do YouTube, baixar videos ou converter videos para audio (mp3, m4a, wav, ogg, opus, flac), use blind-tube (blindtube_search, blindtube_summarize, blindtube_download, blindtube_convert_audio, blindtube_info). A pessoa nao precisa mandar link.\n"
+    "7. Para tirar fotos acessiveis com guia de voz de enquadramento facial, ler dinheiro/objetos/textos ou organizar e pesquisar midias na galeria acessivel, use blind-gallery (blindphoto_cameras, blindphoto_check_position, blindphoto_capture, blindgallery_confirm_save, blindgallery_discard_capture, blindgallery_mark_safe, blindgallery_scan, blindgallery_list, blindgallery_search, blindgallery_view, blindgallery_save_note, blindgallery_remove, blindgallery_albums). Nunca salve fotos ou midias de sexo explicito ou violencia.\n"
+    "8. Para lembrar preferencias/dados da pessoa ou buscar em conversas antigas, use blind-memory (memory_save, "
     "memory_recall, session_search). Para tarefas e lembretes falados, use blind-schedule (blindschedule_create, blindschedule_list, blindschedule_snooze, blindschedule_delete).\n"
-    "6. Para descrever fotos ou transcrever audios recebidos no Telegram/WhatsApp, use blind-channels.\n"
-    "7. Se o pedido nao exigir ferramenta, responda direto."
+    "9. Para descrever fotos ou transcrever audios recebidos no Telegram/WhatsApp, use blind-channels.\n"
+    "10. Se o pedido nao exigir ferramenta, responda direto."
 )
 
 NUDGE = (

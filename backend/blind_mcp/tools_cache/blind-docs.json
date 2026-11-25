@@ -306,7 +306,7 @@
     },
     {
       "name": "describe_image",
-      "description": "Gera audiodescricao acessivel de uma imagem com um modelo multimodal (roteado por capacidade de visao). Se voltar que\nnenhum modelo de visao respondeu, use ver_imagem: ela entrega a imagem ao modelo da conversa para descrever.",
+      "description": "Descreve uma imagem para uma pessoa cega. Usa um modelo de visao configurado, se houver; sem nenhum, entrega a imagem\nao proprio modelo da conversa (Claude) para ele descrever, entao nunca falha por falta de chave de visao.",
       "inputSchema": {
         "properties": {
           "file_path": {
@@ -376,19 +376,6 @@
           }
         },
         "title": "describe_imageArguments",
-        "type": "object"
-      },
-      "outputSchema": {
-        "properties": {
-          "result": {
-            "title": "Result",
-            "type": "string"
-          }
-        },
-        "required": [
-          "result"
-        ],
-        "title": "describe_imageOutput",
         "type": "object"
       }
     },

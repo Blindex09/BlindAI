@@ -735,7 +735,7 @@
     },
     {
       "name": "channel_describe_image",
-      "description": "Gera a audiodescricao completa de uma foto/imagem recebida no Telegram (via telegram_file_id)\nou no WhatsApp/disco local (via file_path) para leitura por pessoas cegas.",
+      "description": "Gera a audiodescricao completa de uma foto/imagem recebida no Telegram (via telegram_file_id)\nou no WhatsApp/disco local (via file_path) para leitura por pessoas cegas. Sem modelo de visao externo,\nentrega a imagem ao proprio modelo da conversa (Claude) para ele descrever.",
       "inputSchema": {
         "properties": {
           "file_path": {
@@ -789,25 +789,11 @@
         },
         "title": "channel_describe_imageArguments",
         "type": "object"
-      },
-      "outputSchema": {
-        "properties": {
-          "result": {
-            "additionalProperties": true,
-            "title": "Result",
-            "type": "object"
-          }
-        },
-        "required": [
-          "result"
-        ],
-        "title": "channel_describe_imageOutput",
-        "type": "object"
       }
     },
     {
       "name": "channel_transcribe_audio",
-      "description": "Transcreve em texto uma mensagem de voz ou audio recebida no Telegram (via telegram_file_id)\nou no WhatsApp/disco local (via file_path, ex: .ogg, .opus, .mp3, .wav, .m4a).",
+      "description": "Transcreve em texto uma mensagem de voz recebida no Telegram (via telegram_file_id)\nou anexo de canal em disco (via file_path). Para audios gerais do computador ou videos\ndo YouTube, prefira a ferramenta `blindaudio` (servidor `blind-audio`).",
       "inputSchema": {
         "properties": {
           "file_path": {

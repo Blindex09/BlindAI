@@ -127,7 +127,7 @@ def read_recent(limit: int = 20, server: str = "") -> List[Dict[str, Any]]:
 # ------------------------------ atividades em linguagem simples (tela do Electron) ------------------------------
 
 _SERVER_LABELS = {
-    "agent-desktop": "Controle de janelas", "blind-speech": "Voz", "blind-docs": "Documentos", "blind-channels": "WhatsApp e Telegram",
+    "agent-desktop": "Controle de janelas", "blind-speech": "Voz", "blind-docs": "Documentos", "blind-audio": "BlindAudio", "blind-tube": "BlindTube", "blind-gallery": "BlindGallery e BlindPhoto", "blind-channels": "WhatsApp e Telegram",
     "blind-memory": "Memoria", "blind-schedule": "Tarefas e lembretes", "blind-system": "Diagnostico", "blind-stt": "Ditado", "blind": "Guia do Blind",
     "blind-mail": "Gmail", "blind-drive": "Drive", "vigia": "Vigia do teclado e mouse",
 }
@@ -137,6 +137,10 @@ _TOOL_PHRASES = {
     "element_action": "Fiz uma acao em um elemento", "launch_app": "Abri um aplicativo", "close_app": "Fechei um aplicativo",
     "list_windows": "Listei as janelas abertas", "screen_context": "Li o estado da tela", "descrever_janela": "Descrevi uma janela",
     "read_document": "Li um documento", "document_outline": "Li o sumario de um documento", "describe_image": "Descrevi uma imagem",
+    "blindaudio": "Transcrevi um audio ou video", "blindaudio_listen": "Preparei um audio para o modelo ouvir", "blindaudio_info": "Consultei informacoes de um audio ou video",
+    "blindtube_search": "Pesquisei videos no YouTube", "blindtube_summarize": "Busquei o conteudo de um video do YouTube para resumir", "blindtube_download": "Baixei um video do YouTube", "blindtube_convert_audio": "Converti um video em arquivo de audio", "blindtube_info": "Consultei os detalhes de um video do YouTube",
+    "blindphoto_cameras": "Listei as cameras conectadas", "blindphoto_check_position": "Verifiquei o enquadramento pela camera", "blindphoto_capture": "Tirei uma foto acessivel pelo BlindPhoto",
+    "blindgallery_scan": "Catalogei midias na galeria acessivel", "blindgallery_list": "Listei midias da galeria acessivel", "blindgallery_search": "Pesquisei midias na galeria acessivel", "blindgallery_view": "Abri uma midia da galeria para descrever", "blindgallery_confirm_save": "Confirmei e salvei uma foto segura na galeria", "blindgallery_discard_capture": "Descartei uma captura temporaria sem salvar", "blindgallery_mark_safe": "Aprovei um arquivo verificado como seguro na galeria", "blindgallery_save_note": "Salvei descricao ou album na galeria acessivel", "blindgallery_remove": "Removi uma midia do catalogo da galeria", "blindgallery_albums": "Consultei os albuns da galeria acessivel",
     "web_search": "Pesquisei na web", "web_read": "Li uma pagina da web", "writer_draft": "Preparei um texto",
     "writer_save": "Salvei um documento", "pdf_forms": "Li os campos de um formulario PDF", "pdf_fill": "Preenchi um formulario PDF",
     "memory_save": "Guardei uma informacao na memoria", "memory_recall": "Busquei na memoria", "blindschedule_create": "Criei um lembrete",

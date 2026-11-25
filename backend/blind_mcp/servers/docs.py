@@ -21,7 +21,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 import httpx
 from mcp.server.fastmcp import FastMCP
 
-from ._common import BACKEND_DIR, run_blocking
+from ._common import BACKEND_DIR, cliente_e_claude, imagem_para_o_modelo, run_blocking, sem_modelo_de_visao
 
 from config.settings import config  # noqa: E402
 from core.vision.smart_vision_router import smart_vision_router  # noqa: E402
@@ -720,7 +720,7 @@ async def web_read(url: str, max_chars: int = 15000) -> Dict[str, Any]:
     }
 
 
-@mcp.tool()
+@mcp.tool(structured_output=False)
 async def describe_image(
     file_path: Optional[str] = None,
     image_base64: Optional[str] = None,
@@ -728,18 +728,32 @@ async def describe_image(
     provider: str = "auto",
     model: Optional[str] = None,
     api_key: Optional[str] = None,
-) -> str:
-    """Gera audiodescricao acessivel de uma imagem com um modelo multimodal (roteado por capacidade de visao). Se voltar que
-    nenhum modelo de visao respondeu, use ver_imagem: ela entrega a imagem ao modelo da conversa para descrever."""
-    resolved_key = _resolve_vision_key(api_key)
-    return await smart_vision_router.describe_multimodal(
-        image_base64=image_base64,
-        file_path=file_path,
-        provider=provider,
-        requested_model=model,
-        api_key=resolved_key,
-        prompt_override=prompt,
-    )
+) -> Any:
+    """Descreve uma imagem para uma pessoa cega. Usa um modelo de visao configurado, se houver; sem nenhum, entrega a imagem
+    ao proprio modelo da conversa (Claude) para ele descrever, entao nunca falha por falta de chave de visao."""
+    descricao = ""
+    if not cliente_e_claude():  # no Claude, quem descreve e o proprio Claude: a imagem nao vai para IA externa
+        descricao = await smart_vision_router.describe_multimodal(
+            image_base64=image_base64,
+            file_path=file_path,
+            provider=provider,
+            requested_model=model,
+            api_key=_resolve_vision_key(api_key),
+            prompt_override=prompt,
+        )
+        if not sem_modelo_de_visao(descricao):
+            return descricao
+    caminho = file_path
+    if not (caminho and os.path.isfile(caminho)) and image_base64:
+        import tempfile
+
+        dados = base64.b64decode(image_base64.split(",", 1)[-1].strip())
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            tmp.write(dados)
+            caminho = tmp.name
+    if not caminho:
+        return descricao
+    return await run_blocking(imagem_para_o_modelo, caminho, prompt)
 
 
 @mcp.tool(structured_output=False)
@@ -748,34 +762,7 @@ async def ver_imagem(file_path: str, pergunta: Optional[str] = None) -> List[Any
     Use quando describe_image falhar (sem modelo de visao) ou quando o proprio Claude estiver conversando. A imagem e reduzida
     (maximo 1568 px) e segue para o modelo da conversa: a mesma nuvem que a pessoa ja usa. Depois de ver, descreva seguindo a
     habilidade descrevendo-imagens. Se a imagem tiver dado sensivel (remedio, conta, documento), leia com falar_em_segredo."""
-    import io
-
-    from mcp.server.fastmcp import Image
-    from mcp.types import TextContent
-    from PIL import Image as PILImage
-
-    p = Path(file_path).expanduser()
-    if not p.is_file():
-        raise ValueError("Não achei esse arquivo de imagem.")
-    if p.stat().st_size > 30 * 1024 * 1024:
-        raise ValueError("A imagem é grande demais (mais de 30 MB).")
-
-    def _preparar() -> bytes:
-        with PILImage.open(p) as im:
-            im = im.convert("RGB")
-            im.thumbnail((1568, 1568))
-            buf = io.BytesIO()
-            im.save(buf, format="JPEG", quality=85)
-            return buf.getvalue()
-
-    try:
-        dados = await run_blocking(_preparar)
-    except Exception as e:  # noqa: BLE001
-        raise ValueError(f"Não consegui abrir como imagem: {type(e).__name__}.") from e
-    nota = ("Imagem entregue para você descrever para uma pessoa cega, com a habilidade descrevendo-imagens. "
-            + (f"Pergunta da pessoa: {pergunta}" if pergunta else "Sem pergunta específica: faça a descrição na ordem da habilidade.")
-            + " Diga que a descrição é sua e pode errar; não identifique ninguém pelo rosto.")
-    return [TextContent(type="text", text=nota), Image(data=dados, format="jpeg").to_image_content()]
+    return await run_blocking(imagem_para_o_modelo, file_path, pergunta)
 
 
 @mcp.tool()

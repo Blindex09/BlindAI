@@ -458,15 +458,16 @@ async def telegram_send(
     return {"ok": True, "enviado": True, "destinatario": destino, "resultado": result}
 
 
-@mcp.tool()
+@mcp.tool(structured_output=False)
 async def channel_describe_image(
     file_path: Optional[str] = None,
     telegram_file_id: Optional[str] = None,
     prompt: Optional[str] = None,
     bot_id: Optional[int] = None,
-) -> Dict[str, Any]:
+) -> Any:
     """Gera a audiodescricao completa de uma foto/imagem recebida no Telegram (via telegram_file_id)
-    ou no WhatsApp/disco local (via file_path) para leitura por pessoas cegas."""
+    ou no WhatsApp/disco local (via file_path) para leitura por pessoas cegas. Sem modelo de visao externo,
+    entrega a imagem ao proprio modelo da conversa (Claude) para ele descrever."""
     b64_img: Optional[str] = None
     source_label = file_path or telegram_file_id or ""
 
@@ -483,49 +484,55 @@ async def channel_describe_image(
         or getattr(config, "openai_api_key", "")
         or os.getenv("OPENAI_API_KEY", "")
     )
-    description = await smart_vision_router.describe_multimodal(
-        image_base64=b64_img,
-        file_path=file_path if not b64_img else None,
-        provider="auto",
-        api_key=api_key,
-        prompt_override=prompt
-        or (
-            "Descreva detalhadamente esta imagem recebida por mensagem para uma pessoa cega: "
-            "texto visivel, comprovantes, valores, pessoas, objetos e contexto."
-        ),
-    )
+    from ._common import cliente_e_claude, imagem_para_o_modelo, sem_modelo_de_visao
+
+    description = ""
+    if not cliente_e_claude():  # no Claude, quem descreve e o proprio Claude: a imagem nao vai para IA externa
+        description = await smart_vision_router.describe_multimodal(
+            image_base64=b64_img,
+            file_path=file_path if not b64_img else None,
+            provider="auto",
+            api_key=api_key,
+            prompt_override=prompt
+            or (
+                "Descreva detalhadamente esta imagem recebida por mensagem para uma pessoa cega: "
+                "texto visivel, comprovantes, valores, pessoas, objetos e contexto."
+            ),
+        )
+
+    if cliente_e_claude() or sem_modelo_de_visao(description):
+        caminho = file_path if (file_path and os.path.isfile(file_path)) else None
+        if not caminho and b64_img:
+            import tempfile
+
+            with tempfile.NamedTemporaryFile(prefix="blind_canal_", suffix=".jpg", delete=False) as tmp:
+                tmp.write(base64.b64decode(b64_img))
+                caminho = tmp.name
+        if caminho:
+            return await run_blocking(imagem_para_o_modelo, caminho, prompt, "Imagem recebida por mensagem")
     return {"ok": True, "source": source_label, "description": description}
 
 
-_WHISPER: Dict[str, Any] = {}
-
-
 def _whisper_model() -> Any:
-    """Carrega o Whisper uma vez por processo. Usa o modelo local sem rede; so baixa se ainda nao existir."""
-    if "model" in _WHISPER:
-        return _WHISPER["model"]
-    from faster_whisper import WhisperModel
+    """Carrega o Whisper uma vez por processo, reutilizando o motor local compartilhado."""
+    from core.audio.blindaudio import get_whisper_model
 
-    model_name = os.environ.get("BLIND_STT_MODEL", "base")
-    model_dir = Path(os.environ.get("BLIND_DATA_DIR") or (BACKEND_DIR / "data")) / "models" / "whisper"
-    model_dir.mkdir(parents=True, exist_ok=True)
-    try:
-        model = WhisperModel(model_name, device="auto", compute_type="int8", download_root=str(model_dir), local_files_only=True)
-    except Exception:  # noqa: BLE001 - ainda nao baixado: baixa uma vez (pode levar minutos na primeira vez)
-        model = WhisperModel(model_name, device="auto", compute_type="int8", download_root=str(model_dir))
-    _WHISPER["model"] = model
-    return model
+    return get_whisper_model(os.environ.get("BLIND_STT_MODEL", "base"))
 
 
 def _transcribe_file_sync(path: str, language: str = "pt") -> Dict[str, Any]:
-    model = _whisper_model()
-    segments, info = model.transcribe(path, language=language or None, beam_size=5, vad_filter=True)
-    text = " ".join(seg.text.strip() for seg in segments).strip()
+    from core.audio.blindaudio import transcribe_local_whisper
+
+    res = transcribe_local_whisper(
+        path,
+        idioma=language or "auto",
+        model_name=os.environ.get("BLIND_STT_MODEL", "base"),
+    )
     return {
         "ok": True,
-        "text": text,
-        "language": info.language,
-        "duration_seconds": round(float(info.duration), 2),
+        "text": res["text"],
+        "language": res["language"],
+        "duration_seconds": res["duration_seconds"],
     }
 
 
@@ -536,8 +543,9 @@ async def channel_transcribe_audio(
     language: str = "pt",
     bot_id: Optional[int] = None,
 ) -> Dict[str, Any]:
-    """Transcreve em texto uma mensagem de voz ou audio recebida no Telegram (via telegram_file_id)
-    ou no WhatsApp/disco local (via file_path, ex: .ogg, .opus, .mp3, .wav, .m4a)."""
+    """Transcreve em texto uma mensagem de voz recebida no Telegram (via telegram_file_id)
+    ou anexo de canal em disco (via file_path). Para audios gerais do computador ou videos
+    do YouTube, prefira a ferramenta `blindaudio` (servidor `blind-audio`)."""
     if telegram_file_id:
         raw_bytes, remote_path = await telegram_manager.download_file_bytes(telegram_file_id, bot_id=bot_id)
         suffix = Path(remote_path).suffix or ".ogg"

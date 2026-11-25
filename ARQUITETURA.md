@@ -16,6 +16,9 @@ Backend Python (FastAPI, server.py)
             blind-speech     fala offline (SAPI)
             blind-stt        ditado: transcrição local com Whisper (faster-whisper), o áudio não sai do PC
             blind-docs       documentos acessíveis (PDF digital e escaneado, formulários PDF), audiodescrição de imagem, escrita assistida e leitura da web
+            blind-audio      blindaudio: transcrição de áudio/vídeo local e do YouTube (audição direta para Gemini ou legendas / Whisper small local para Claude)
+            blind-tube       blindtube: pesquisa e resumo de vídeos do YouTube (sem precisar de link), download para Vídeos e conversão para áudio em Músicas
+            blind-gallery    blindgallery e blindphoto: galeria acessível com trava contra sexo/violência, busca por descrição e câmera guiada por voz para rosto, objetos, dinheiro e textos
             blind-channels   WhatsApp (pareamento por código) e Telegram
             blind-memory     memória pessoal, busca no histórico de conversas e cofre de segredos
             blind-schedule   tarefas e lembretes falados
@@ -34,7 +37,7 @@ A lista de servidores vive em `backend/mcp.json` (formato `mcpServers`, igual ao
 |---|---|---|
 | `windows` | `C:\repos ia\Windows-MCP` (`BLIND_REPOS_DIR`), via `uv run --directory` | Único que lê um repositório externo, sem cópia. |
 | `agent-desktop` | Pacote npm global `agent-desktop` (`npm install -g agent-desktop`) | O servidor só chama o binário. A pasta `C:\repos ia\agent-desktop` **não** é usada. |
-| `blind-speech`, `blind-stt`, `blind-docs`, `blind-channels`, `blind-memory`, `blind-schedule`, `blind-system`, `blind` | Código próprio em `backend/blind_mcp/servers/` | Sem dependência dos repos. |
+| `blind-speech`, `blind-stt`, `blind-docs`, `blind-audio`, `blind-tube`, `blind-gallery`, `blind-channels`, `blind-memory`, `blind-schedule`, `blind-system`, `blind` | Código próprio em `backend/blind_mcp/servers/` | Sem dependência dos repos. |
 | `blind-commander` | Pacote npm `@wonderwhy-er/desktop-commander`, versão fixa 0.3.3 (MIT), via `npx` | Sem controle de teclado nem de mouse. |
 | `blind-a11y` | `accessibility-agents-mcp` 7.1.0 (MIT, versão fixa), instalado em `backend/vendor/a11y-mcp` | As ferramentas `glow_*` ficam desligadas: enviariam arquivos a um serviço externo. Passo a passo em `backend/patches/README.md`. |
 

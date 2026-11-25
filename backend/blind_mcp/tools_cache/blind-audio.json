@@ -1,0 +1,175 @@
+{
+  "server": "blind-audio",
+  "instructions": null,
+  "tools": [
+    {
+      "name": "blindaudio",
+      "description": "Transcreve audio ou video em texto usando o blindaudio.\n\n`fonte` aceita caminho de arquivo local de audio ou video no computador (.mp3, .wav, .ogg, .opus,\n.m4a, .mp4, .mkv, .webm) OU um link de video do YouTube.\nNo YouTube, usa as legendas do video quando houver; se nao houver (ou com `forcar_whisper=true`),\nbaixa so o audio para pasta temporaria e transcreve localmente com Whisper `small` (ideal para\nClaude e modelos que nao ouvem audio diretamente). Modelos que ouvem audio diretamente (como\nGemini) devem preferir `blindaudio_listen` ou abrir arquivos de audio locais direto sem Whisper.\nEm arquivos longos, devolve por partes: chame de novo com `continuar=true` para ouvir a proxima\nparte, ou informe `parte=2` para ir a uma parte especifica.\n`com_tempos=true` inclui marcas [MM:SS] antes de cada trecho.\n`inicio_segundos` e `fim_segundos` permitem transcrever apenas um trecho.\n",
+      "inputSchema": {
+        "properties": {
+          "fonte": {
+            "title": "Fonte",
+            "type": "string"
+          },
+          "idioma": {
+            "default": "auto",
+            "title": "Idioma",
+            "type": "string"
+          },
+          "com_tempos": {
+            "default": false,
+            "title": "Com Tempos",
+            "type": "boolean"
+          },
+          "continuar": {
+            "default": false,
+            "title": "Continuar",
+            "type": "boolean"
+          },
+          "parte": {
+            "default": 0,
+            "title": "Parte",
+            "type": "integer"
+          },
+          "forcar_whisper": {
+            "default": false,
+            "title": "Forcar Whisper",
+            "type": "boolean"
+          },
+          "inicio_segundos": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Inicio Segundos"
+          },
+          "fim_segundos": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Fim Segundos"
+          }
+        },
+        "required": [
+          "fonte"
+        ],
+        "title": "blindaudioArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "blindaudioOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "blindaudio_listen",
+      "description": "Prepara ou baixa um audio compacto (de arquivo local, video ou link do YouTube) para que um\nmodelo capaz de ouvir audio (como o Gemini) escute e transcreva diretamente, sem usar Whisper.\n\nSe o modelo desta conversa nao ouvir audio (como o Claude), use `blindaudio`.\nPor padrao devolve os metadados e o caminho `arquivo_audio` (para abrir direto com `read_file`).\nCom `entregar_no_mcp=true`, tambem anexa o audio embutido na resposta MCP (limite 12 MB).\n",
+      "inputSchema": {
+        "properties": {
+          "fonte": {
+            "title": "Fonte",
+            "type": "string"
+          },
+          "pergunta": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Pergunta"
+          },
+          "inicio_segundos": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Inicio Segundos"
+          },
+          "fim_segundos": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Fim Segundos"
+          },
+          "entregar_no_mcp": {
+            "default": false,
+            "title": "Entregar No Mcp",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "fonte"
+        ],
+        "title": "blindaudio_listenArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "blindaudio_info",
+      "description": "Mostra informacoes rapidas antes de transcrever: titulo, canal, duracao falada, capitulos e\nlegendas disponiveis (no YouTube) ou formato, tamanho e duracao (em arquivo local).\n",
+      "inputSchema": {
+        "properties": {
+          "fonte": {
+            "title": "Fonte",
+            "type": "string"
+          }
+        },
+        "required": [
+          "fonte"
+        ],
+        "title": "blindaudio_infoArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "blindaudio_infoOutput",
+        "type": "object"
+      }
+    }
+  ]
+}

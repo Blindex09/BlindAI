@@ -83,8 +83,9 @@ class Child:
         try:
             self.log_dir.mkdir(parents=True, exist_ok=True)
             log = open(self.log_dir / f"lazy-{self.spec.name}.log", "a", encoding="utf-8", errors="replace")
-            params = StdioServerParameters(command=self.spec.command, args=self.spec.args, env=self.spec.env or None,
-                                           cwd=self.spec.cwd)
+            # O proxy so existe no Claude: la o modelo da conversa (Claude) e quem enxerga imagens (sem IA externa).
+            params = StdioServerParameters(command=self.spec.command, args=self.spec.args,
+                                           env={**(self.spec.env or {}), "BLIND_CLIENTE": "claude"}, cwd=self.spec.cwd)
             async with stdio_client(params, errlog=log) as (reader, writer):
                 async with ClientSession(reader, writer) as session:
                     self.init_result = await asyncio.wait_for(session.initialize(), self.spec.startup_timeout)

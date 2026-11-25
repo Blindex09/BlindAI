@@ -73,6 +73,48 @@
       "callTimeout": 120,
       "lazy": true
     },
+    "blind-audio": {
+      "description": "BlindAudio (blindaudio, blindaudio_listen e blindaudio_info): transcricao acessivel de arquivos locais de audio/video e videos do YouTube (audicao direta para Gemini, legendas ou Whisper small local para Claude).",
+      "command": "${PYTHON}",
+      "args": [
+        "-m",
+        "blind_mcp.servers.audio"
+      ],
+      "cwd": "${BACKEND_DIR}",
+      "env": {
+        "PYTHONUTF8": "1"
+      },
+      "callTimeout": 600,
+      "lazy": true
+    },
+    "blind-tube": {
+      "description": "BlindTube (blindtube_search, blindtube_summarize, blindtube_download, blindtube_convert_audio, blindtube_info): pesquisa e resume videos do YouTube (sem precisar de link), baixa videos para a pasta Videos e converte videos do YouTube ou locais para audio (mp3, m4a, wav, ogg, opus, flac).",
+      "command": "${PYTHON}",
+      "args": [
+        "-m",
+        "blind_mcp.servers.tube"
+      ],
+      "cwd": "${BACKEND_DIR}",
+      "env": {
+        "PYTHONUTF8": "1"
+      },
+      "callTimeout": 900,
+      "lazy": true
+    },
+    "blind-gallery": {
+      "description": "BlindGallery e BlindPhoto (blindphoto_cameras, blindphoto_check_position, blindphoto_capture, blindgallery_confirm_save, blindgallery_discard_capture, blindgallery_mark_safe, blindgallery_scan, blindgallery_list, blindgallery_search, blindgallery_view, blindgallery_save_note, blindgallery_remove, blindgallery_albums): galeria acessivel com trava por conteudo e impressao digital contra sexo/violencia, busca por descricao e camera guiada por voz.",
+      "command": "${PYTHON}",
+      "args": [
+        "-m",
+        "blind_mcp.servers.gallery"
+      ],
+      "cwd": "${BACKEND_DIR}",
+      "env": {
+        "PYTHONUTF8": "1"
+      },
+      "callTimeout": 180,
+      "lazy": true
+    },
     "blind-stt": {
       "description": "Ditado e comandos por voz: transcricao local com Whisper (faster-whisper).",
       "command": "${PYTHON}",
@@ -189,14 +231,14 @@
       "lazy": true
     },
     "blind-a11y": {
-      "description": "Community-Access/accessibility-agents-mcp 7.1.0 (MIT, versao fixa, instalado em backend/vendor/a11y-mcp com Playwright 1.64.1, axe-core 4.14.0, pdf-lib 1.17.1 e Chromium; veraPDF 1.30.4 em %USERPROFILE%\u000beraPDF): 39 scanners locais de acessibilidade (axe-core, Office, PDF, ePub, markdown, contraste, teclado, PDF/UA). As ferramentas glow_* ficam DESLIGADAS: enviam arquivos para letitglow.app (servico externo); GLOW_API_BASE_URL aponta para um endereco local morto como segunda trava. Instalado em 17/11/2026 a pedido do usuario.",
+      "description": "Community-Access/accessibility-agents-mcp 7.1.0 (MIT, versao fixa, instalado em backend/vendor/a11y-mcp com Playwright 1.64.1, axe-core 4.14.0, pdf-lib 1.17.1 e Chromium; veraPDF 1.30.4 em %USERPROFILE%\\veraPDF): 39 scanners locais de acessibilidade (axe-core, Office, PDF, ePub, markdown, contraste, teclado, PDF/UA). As ferramentas glow_* ficam DESLIGADAS: enviam arquivos para letitglow.app (servico externo); GLOW_API_BASE_URL aponta para um endereco local morto como segunda trava. Instalado em 17/11/2026 a pedido do usuario.",
       "command": "node",
       "args": [
         "${BACKEND_DIR}/vendor/a11y-mcp/node_modules/@community-access/accessibility-agents-mcp/dist/stdio.mjs"
       ],
       "env": {
         "GLOW_API_BASE_URL": "http://127.0.0.1:9/mcp",
-        "PATH": "${USERPROFILE}\u000beraPDF;${PATH}"
+        "PATH": "${USERPROFILE}\\veraPDF;${PATH}"
       },
       "disabledTools": [
         "glow_health_check",

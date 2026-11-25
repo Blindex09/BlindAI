@@ -295,27 +295,46 @@ async def _async_unwrap(fn: Any, *args: Any) -> Any:
     return unwrap_bridge(await run_blocking(fn, *args))
 
 
-@mcp.tool()
+@mcp.tool(structured_output=False)
 async def descrever_janela(app: Optional[str] = None, window_id: Optional[str] = None, pergunta: Optional[str] = None) -> Any:
     """Plano B quando um app nao expoe seus elementos na acessibilidade: captura a janela e pede a um modelo de visao
     uma descricao falada (botoes, textos, mensagens de erro, onde esta cada coisa). So le a tela; nao clica nem digita.
     `pergunta` e opcional (ex: 'o que diz o aviso vermelho?'). Pode demorar alguns segundos e usa a chave de visao configurada."""
+    import base64
     import os
+    import tempfile
 
     from config.settings import config  # noqa: E402
     from core.vision.smart_vision_router import smart_vision_router  # noqa: E402
 
+    from ._common import cliente_e_claude, imagem_para_o_modelo, sem_modelo_de_visao
+
     app, window_id = await _resolve(app, window_id)
     shot = unwrap_bridge(await run_blocking(bridge.screenshot, app, window_id, None))
-    path = shot.get("path") if isinstance(shot, dict) else shot
-    if not isinstance(path, str) or not os.path.isfile(path):
+    # O agent-desktop devolve a captura em base64 ({"data": "..."}) ou, com um caminho pedido, {"path": "..."}.
+    path = None
+    if isinstance(shot, dict):
+        if isinstance(shot.get("path"), str) and os.path.isfile(shot["path"]):
+            path = shot["path"]
+        elif isinstance(shot.get("data"), str) and shot["data"]:
+            with tempfile.NamedTemporaryFile(prefix="blind_janela_", suffix=".png", delete=False) as tmp:
+                tmp.write(base64.b64decode(shot["data"]))
+                path = tmp.name
+    elif isinstance(shot, str) and os.path.isfile(shot):
+        path = shot
+    if not path:
         raise RuntimeError("Nao consegui capturar a janela para descrever.")
     key = (getattr(config, "gemini_api_key", "") or os.getenv("GEMINI_API_KEY", "")
            or getattr(config, "openai_api_key", "") or os.getenv("OPENAI_API_KEY", ""))
     prompt = pergunta or ("Descreva esta janela de aplicativo para uma pessoa cega: titulo, menus, botoes, campos, textos, "
                           "mensagens de erro e o que esta selecionado, na ordem em que aparecem.")
-    descricao = await smart_vision_router.describe_multimodal(
-        file_path=path, provider="auto", api_key=key, prompt_override=prompt)
+    descricao = ""
+    if not cliente_e_claude():  # no Claude, quem descreve e o proprio Claude: a captura nao vai para IA externa
+        descricao = await smart_vision_router.describe_multimodal(
+            file_path=path, provider="auto", api_key=key, prompt_override=prompt)
+    if cliente_e_claude() or sem_modelo_de_visao(descricao):
+        # Sem modelo de visao externo: a propria conversa (Claude) descreve a captura.
+        return await run_blocking(imagem_para_o_modelo, path, pergunta, "Captura da janela")
     return {"ok": True, "captura": path, "descricao": descricao,
             "aviso": "Descricao feita por modelo de visao: pode errar. Para agir, ainda precisa de um @ref (snapshot)."}
 

@@ -7,7 +7,7 @@ O Blind NUNCA pode:
 - desligar ou reiniciar o computador;
 - deixar o computador sem som (mudo, ou volume abaixo de 15%) nem apagar a tela (tela desligada, brilho abaixo de 20%).
   Abaixar um pouco e aumentar pode.
-- gravar arquivos com o blind-docs fora de Downloads, Documentos, Musicas e Videos (subpastas dentro delas pode).
+- gravar arquivos com o blind-docs fora de Downloads, Documentos, Musicas, Videos e Imagens (subpastas dentro delas pode).
 
 Limite honesto: um comando livre de PowerShell pode ser escrito de muitos jeitos. A conferencia abaixo pega os jeitos comuns e
 recusa na duvida (volume ou brilho que nao da para conferir), mas nao e uma muralha contra quem se esforce para burlar.
@@ -83,11 +83,12 @@ _KNOWN = {
     "Downloads": "374DE290-123F-4565-9164-39C4925E467B",
     "Music": "4BD8D571-6D19-48D3-BE97-422220080E43",
     "Videos": "18989B1D-99B5-455B-841C-AB7C74E4DDFC",
+    "Pictures": "33E28130-4E1E-4676-835A-98395C3BC3BB",
 }
 
 
 def pastas_de_gravacao() -> List[Path]:
-    """Downloads, Documentos, Musicas e Videos da pessoa (mais BLIND_PASTAS_EXTRAS, separado por ';', para testes)."""
+    """Downloads, Documentos, Musicas, Videos e Imagens da pessoa (mais BLIND_PASTAS_EXTRAS, separado por ';', para testes)."""
     achadas: List[str] = []
     home = Path.home()
     for nome, guid in _KNOWN.items():
@@ -112,7 +113,7 @@ def caminho_protegido(caminho: str | os.PathLike) -> bool:
 
 
 def conferir_gravacao_blind_docs(caminho: str | os.PathLike) -> None:
-    """Levanta BloqueioDeSeguranca se o blind-docs for gravar fora de Downloads, Documentos, Musicas ou Videos."""
+    """Levanta BloqueioDeSeguranca se o blind-docs for gravar fora de Downloads, Documentos, Musicas, Videos ou Imagens."""
     if not str(caminho).strip():
         raise BloqueioDeSeguranca("Faltou o caminho do arquivo a gravar.")
     n = _norm(caminho)
@@ -120,7 +121,7 @@ def conferir_gravacao_blind_docs(caminho: str | os.PathLike) -> None:
         raise BloqueioDeSeguranca("Regra de segurança do Blind: não gravo nada em Windows nem em Arquivos de Programas.")
     if not any(_sob(n, _norm(r)) for r in pastas_de_gravacao()):
         raise BloqueioDeSeguranca(
-            "Regra de segurança do Blind: só gravo documentos em Downloads, Documentos, Músicas e Vídeos "
+            "Regra de segurança do Blind: só gravo documentos em Downloads, Documentos, Músicas, Vídeos e Imagens "
             "(ou em pastas dentro delas). Escolha uma dessas.")
 
 

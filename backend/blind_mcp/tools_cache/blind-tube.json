@@ -1,0 +1,264 @@
+{
+  "server": "blind-tube",
+  "instructions": null,
+  "tools": [
+    {
+      "name": "blindtube_search",
+      "description": "Pesquisa videos no YouTube por titulo, assunto ou canal (sem precisar que a pessoa envie link).\n\nDevolve opcoes numeradas com titulo, canal, duracao falada e url. Leia para a pessoa escolher\n(sem ler os links) e depois use a url escolhida em blindtube_summarize, blindtube_download ou\nblindtube_convert_audio.\n",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "max_results": {
+            "default": 5,
+            "title": "Max Results",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "blindtube_searchArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "blindtube_searchOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "blindtube_summarize",
+      "description": "Busca titulo, canal, duracao, capitulos e o conteudo de um video do YouTube para resumir.\n\nA pessoa nao precisa enviar o link: voce pode pesquisar antes com `blindtube_search` ou passar\numa frase de busca aqui para receber opcoes e perguntar qual ela quer.\n`modo`:\n- 'auto' (padrao): usa as legendas do YouTube quando houver, ou Whisper small local quando nao houver (ideal para o Claude).\n- 'ouvir': prepara ou baixa so o audio compacto e devolve `arquivo_audio` para modelos que ouvem audio diretamente (como o Gemini) sem usar Whisper.\n- 'whisper': transcreve diretamente pelo audio com Whisper small local.\nEm videos longos, use `continuar=true` ou `parte=2` para ler os proximos trechos.\n",
+      "inputSchema": {
+        "properties": {
+          "url": {
+            "title": "Url",
+            "type": "string"
+          },
+          "idioma": {
+            "default": "auto",
+            "title": "Idioma",
+            "type": "string"
+          },
+          "continuar": {
+            "default": false,
+            "title": "Continuar",
+            "type": "boolean"
+          },
+          "parte": {
+            "default": 0,
+            "title": "Parte",
+            "type": "integer"
+          },
+          "modo": {
+            "default": "auto",
+            "title": "Modo",
+            "type": "string"
+          },
+          "inicio_segundos": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Inicio Segundos"
+          },
+          "fim_segundos": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Fim Segundos"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "blindtube_summarizeArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "blindtube_summarizeOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "blindtube_download",
+      "description": "Baixa um video do YouTube para o computador (so quando a pessoa pedir).\n\nA pessoa nao precisa enviar o link: pesquise antes com `blindtube_search` ou passe o assunto aqui\npara listar opcoes e confirmar qual video baixar antes de iniciar o download.\n`qualidade`: 'melhor', '1080p', '720p' (padrao), '480p' ou '360p'.\nPor padrao salva na pasta Videos da pessoa; aceita apenas Downloads, Documentos, Musicas ou Videos\ne nunca sobrescreve arquivos ja existentes.\n",
+      "inputSchema": {
+        "properties": {
+          "url": {
+            "title": "Url",
+            "type": "string"
+          },
+          "qualidade": {
+            "default": "720p",
+            "title": "Qualidade",
+            "type": "string"
+          },
+          "pasta_destino": {
+            "default": "",
+            "title": "Pasta Destino",
+            "type": "string"
+          },
+          "nome_arquivo": {
+            "default": "",
+            "title": "Nome Arquivo",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "blindtube_downloadArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "blindtube_downloadOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "blindtube_convert_audio",
+      "description": "Baixa ou extrai o audio e converte um video do YouTube ou arquivo local de video/audio para audio.\n\nA pessoa nao precisa enviar o link: para videos do YouTube, pesquise antes com `blindtube_search`\nou passe o assunto aqui para listar opcoes e confirmar qual video converter.\n`formato`: 'mp3' (padrao), 'm4a', 'wav', 'ogg', 'opus' ou 'flac'.\nPor padrao salva na pasta Musicas da pessoa; aceita apenas Downloads, Documentos, Musicas ou Videos\ne nunca sobrescreve arquivos ja existentes. Use `inicio_segundos` e `fim_segundos` para extrair so um trecho.\n",
+      "inputSchema": {
+        "properties": {
+          "fonte": {
+            "title": "Fonte",
+            "type": "string"
+          },
+          "formato": {
+            "default": "mp3",
+            "title": "Formato",
+            "type": "string"
+          },
+          "pasta_destino": {
+            "default": "",
+            "title": "Pasta Destino",
+            "type": "string"
+          },
+          "nome_arquivo": {
+            "default": "",
+            "title": "Nome Arquivo",
+            "type": "string"
+          },
+          "inicio_segundos": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Inicio Segundos"
+          },
+          "fim_segundos": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Fim Segundos"
+          }
+        },
+        "required": [
+          "fonte"
+        ],
+        "title": "blindtube_convert_audioArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "blindtube_convert_audioOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "blindtube_info",
+      "description": "Mostra informacoes rapidas de um video do YouTube antes de resumir, baixar ou converter:\ntitulo, canal, duracao falada, visualizacoes, descricao resumida, capitulos, legendas e qualidades disponiveis.\nSe receber texto livre em vez de link, devolve opcoes da busca no YouTube para escolher.\n",
+      "inputSchema": {
+        "properties": {
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "blindtube_infoArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "blindtube_infoOutput",
+        "type": "object"
+      }
+    }
+  ]
+}

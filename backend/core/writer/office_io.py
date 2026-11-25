@@ -180,9 +180,20 @@ def escrever_pptx(destino: str, titulo: str, conteudo: str) -> None:
     prs.save(destino)
 
 
+def sem_titulo_repetido(titulo: str, conteudo: str) -> str:
+    """Tira do conteudo a primeira linha '# Titulo' quando ela repete o titulo do documento (que ja sai como titulo)."""
+    linhas = conteudo.strip().splitlines()
+    if linhas and titulo:
+        m = re.match(r"^#{1,6}\s+(.*)$", linhas[0].strip())
+        if m and m.group(1).strip().casefold() == titulo.strip().casefold():
+            return "\n".join(linhas[1:]).strip()
+    return conteudo
+
+
 def escrever_pdf(destino: str, titulo: str, conteudo: str) -> None:
     import pymupdf
 
+    conteudo = sem_titulo_repetido(titulo, conteudo)
     partes = [f"<h1>{html.escape(titulo)}</h1>"] if titulo else []
     for par in re.split(r"\n\s*\n", conteudo.strip()):
         par = par.strip()

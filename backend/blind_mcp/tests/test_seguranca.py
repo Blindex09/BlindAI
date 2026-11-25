@@ -126,7 +126,7 @@ def test_tela_nunca_apaga_nem_brilho_minimo():
 def test_blind_docs_so_grava_em_downloads_documentos_musicas_videos(monkeypatch):
     monkeypatch.delenv("BLIND_PASTAS_EXTRAS", raising=False)
     home = Path.home()
-    for nome in ("Downloads", "Documents", "Music", "Videos"):
+    for nome in ("Downloads", "Documents", "Music", "Videos", "Pictures"):
         sg.conferir_gravacao_blind_docs(home / nome / "a.docx")
         sg.conferir_gravacao_blind_docs(home / nome / "nova pasta" / "sub" / "a.docx")  # subpasta nova pode
     for ruim in (home / "Desktop" / "a.docx", home / "a.docx", Path(r"C:\Windows\a.docx"), Path(r"C:\Program Files\a.docx"),

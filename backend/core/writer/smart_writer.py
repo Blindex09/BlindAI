@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import shutil
 import tempfile
 from pathlib import Path
@@ -150,11 +151,21 @@ class SmartWriter:
                     lang = OxmlElement("w:lang")
                     rpr.append(lang)
                 lang.set(qn("w:val"), "pt-BR")
-                if draft.get("title"):
-                    doc.add_heading(str(draft["title"]), level=1)
-                for par in str(draft["content"]).split("\n\n"):
-                    if par.strip():
-                        doc.add_paragraph(par.strip())
+                from . import office_io
+
+                titulo_doc = str(draft.get("title") or "")
+                if titulo_doc:
+                    doc.add_heading(titulo_doc, level=1)
+                corpo = office_io.sem_titulo_repetido(titulo_doc, str(draft["content"]))
+                for par in corpo.split("\n\n"):
+                    par = par.strip()
+                    if not par:
+                        continue
+                    m = re.match(r"^(#{1,6})\s+(.+)$", par)
+                    if m and "\n" not in par:  # '# Secao' vira titulo de verdade (leitor de tela navega por titulos)
+                        doc.add_heading(m.group(2).strip(), level=min(len(m.group(1)) + (1 if titulo_doc else 0), 9))
+                    else:
+                        doc.add_paragraph(par)
                 doc.save(temp_path_str)
             else:
                 with os.fdopen(temp_fd, "w", encoding="utf-8") as f:
