@@ -5,7 +5,7 @@ palavras: blindtube, blindthube, youtube, youtu, pesquisar, resumir, resumo, bai
 ---
 # Usando o blindtube (YouTube: pesquisar, resumir, baixar e converter)
 
-A ferramenta se chama **blindtube** (`blindtube_search`, `blindtube_summarize`, `blindtube_info`, `blindtube_download` e `blindtube_convert_audio`).
+A ferramenta se chama **blindtube** (`blindtube_search`, `blindtube_summarize`, `blindtube_transcribe`, `blindtube_info`, `blindtube_download` e `blindtube_convert_audio`).
 
 ## Pesquisar sem precisar de link
 - **Nunca peça para a pessoa copiar ou colar um link do YouTube.** Quando ela disser o assunto, nome do vídeo ou canal, pesquise primeiro com `blindtube_search`.
@@ -16,6 +16,7 @@ A ferramenta se chama **blindtube** (`blindtube_search`, `blindtube_summarize`, 
 2. **Resumo curto**: entregue os pontos principais em 3 a 5 frases claras, sem markdown, e ofereça detalhes, capítulos ou a leitura por partes (`continuar=true`).
 3. **Escolha o modo certo**: no Gemini ou em modelo que ouve áudio, use `modo='ouvir'` quando não houver legendas para evitar o Whisper; no Claude, use o padrão `modo='auto'` (legendas do YouTube ou Whisper `small` local).
 4. **Se houver capítulos**, liste os principais para a pessoa escolher onde ir.
+5. **Arquivo do computador**: `blindtube_summarize` e `blindtube_transcribe` aceitam o caminho completo de um áudio ou vídeo. Para música cantada use `musica=true`, senão o canto pode sair vazio. Se mesmo assim sair pouco ou nada, diga isso e não invente a letra. Cabem uns cinco minutos de áudio por chamada; acima disso, peça trechos com `inicio_segundos` e `fim_segundos`.
 
 ## Baixar vídeo e converter para áudio
 - **Só baixe ou converta quando a pessoa pedir e confirmar qual vídeo da busca ela quer.** Não baixe vídeos só para resumir se já houver legendas.

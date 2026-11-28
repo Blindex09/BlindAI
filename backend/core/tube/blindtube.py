@@ -31,6 +31,7 @@ AUDIO_FORMATS: Dict[str, Tuple[List[str], str]] = {
     "flac": (["-c:a", "flac"], ".flac"),
 }
 MAX_DESC_CHARS = 800
+MAX_TRANSCRICAO_SEGUNDOS = 300
 
 _FORBIDDEN_WIN_RE = re.compile(r'[<>:"/\\|?*\x00-\x1f\x7f]')
 _RESERVED_WIN_NAMES = {
@@ -386,13 +387,21 @@ def resumir_video(
     modo: str = "auto",
     inicio_segundos: Optional[float] = None,
     fim_segundos: Optional[float] = None,
+    musica: bool = False,
 ) -> Dict[str, Any]:
-    """Prepara o conteudo completo de um video do YouTube para resumo acessivel."""
+    """Prepara o conteudo completo de um video do YouTube ou de um arquivo local para resumo acessivel."""
     modo_norm = (modo or "auto").strip().lower()
     if modo_norm not in ("auto", "ouvir", "whisper"):
         raise ValueError("Modo invalido. Escolha entre: auto, ouvir ou whisper.")
     if _parece_busca_texto(url):
         return _buscar_opcoes_para_escolher(url)
+    if blindaudio.classificar_fonte(url)["tipo"] == "local":
+        if modo_norm == "ouvir":
+            raise ValueError("O modo ouvir so vale para videos do YouTube. Para arquivo local use auto ou whisper.")
+        out = transcrever_audio(url, idioma, False, continuar, parte, inicio_segundos, fim_segundos, musica)
+        out["modo"] = modo_norm
+        out["instrucoes_resumo"] = _INSTRUCOES_RESUMO
+        return out
     src = _validar_url_youtube(url)
 
     info = info_video(src["url"])
@@ -442,6 +451,50 @@ def resumir_video(
     out["capitulos"] = info["capitulos"]
     out["instrucoes_resumo"] = _INSTRUCOES_RESUMO
     return out
+
+
+def _conferir_cabe_no_limite(path: str, inicio: Optional[float], fim: Optional[float]) -> None:
+    """O cliente corta a chamada em ~60 s e o Whisper local leva ~15% da duracao: recusa antes o que nao cabe."""
+    dur = float(blindaudio.obter_info_local(path).get("duracao_segundos") or 0.0)
+    fim_efetivo = min(fim, dur) if fim is not None and dur > 0 else (fim if fim is not None else dur)
+    trecho = fim_efetivo - (inicio or 0.0)
+    if trecho > MAX_TRANSCRICAO_SEGUNDOS:
+        raise ValueError(
+            f"Esse audio e grande demais para transcrever de uma vez: a chamada e cortada em cerca de um minuto "
+            f"e aqui cabem uns {MAX_TRANSCRICAO_SEGUNDOS // 60} minutos de audio. "
+            f"Peca um trecho de ate {MAX_TRANSCRICAO_SEGUNDOS // 60} minutos com inicio_segundos e fim_segundos."
+        )
+
+
+def transcrever_audio(
+    fonte: str,
+    idioma: str = "auto",
+    com_tempos: bool = False,
+    continuar: bool = False,
+    parte: int = 0,
+    inicio_segundos: Optional[float] = None,
+    fim_segundos: Optional[float] = None,
+    musica: bool = False,
+) -> Dict[str, Any]:
+    """Transcreve um arquivo local de audio/video ou um video do YouTube (legendas ou Whisper local)."""
+    if _parece_busca_texto(fonte):
+        return _buscar_opcoes_para_escolher(fonte)
+    src = blindaudio.classificar_fonte(fonte)
+    if src["tipo"] == "local":
+        fn_safety = content_safety.check_filename_safety(src["path"])
+        if not fn_safety["safe"]:
+            raise content_safety.ContentSafetyError(fn_safety["message"])
+        _conferir_cabe_no_limite(src["path"], inicio_segundos, fim_segundos)
+    return blindaudio.transcrever_fonte(
+        src["url"] if src["tipo"] == "youtube" else src["path"],
+        idioma=idioma,
+        com_tempos=com_tempos,
+        continuar=continuar,
+        parte=parte,
+        inicio_segundos=inicio_segundos,
+        fim_segundos=fim_segundos,
+        musica=musica,
+    )
 
 
 # ----------------------------------------------------------------------------- download de video
@@ -540,7 +593,8 @@ def _executar_ffmpeg_audio(
     ini: Optional[float],
     fim: Optional[float],
 ) -> None:
-    cmd = [ff, "-y", "-loglevel", "error"]
+    # O stdin do servidor e o canal do protocolo MCP: o ffmpeg nunca pode herda-lo (travava a conversao).
+    cmd = [ff, "-nostdin", "-y", "-loglevel", "error"]
     if ini is not None:
         cmd += ["-ss", str(ini)]
     cmd += ["-i", src_path]
@@ -549,6 +603,7 @@ def _executar_ffmpeg_audio(
     cmd += ["-vn", *codec_args, str(dst_path)]
     proc = subprocess.run(
         cmd,
+        stdin=subprocess.DEVNULL,
         capture_output=True,
         timeout=600,
         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),

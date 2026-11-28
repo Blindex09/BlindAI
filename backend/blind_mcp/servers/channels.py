@@ -141,7 +141,7 @@ async def telegram_messages(
 
 
 @mcp.tool()
-async def canais_vincular_telegram() -> Dict[str, Any]:
+async def channels_link_telegram() -> Dict[str, Any]:
     """Gera o codigo de 6 digitos para a pessoa vincular o chat dela ao bot do Telegram (vale 10 min, uso unico). Ela envia
     `/vincular CODIGO` ao bot e, a partir dai, o Blind responde so a ela naquele chat. So chame se a pessoa pedir."""
     from core.channels import blind_bridge
@@ -150,7 +150,7 @@ async def canais_vincular_telegram() -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def google_pedir(pedido: str, canal: str, destino: str) -> Dict[str, Any]:
+async def google_request(pedido: str, canal: str, destino: str) -> Dict[str, Any]:
     """Passa um pedido de Calendar, Drive ou Gmail a sessao do Google (o Blind nao tem esses conectores). A resposta chega depois,
     sozinha, pelo canal de origem. `canal` e 'telegram' ou 'whatsapp' e `destino` o que a mensagem de contexto informou. Descreva o
     pedido completo e sem segredos. Enviar e-mail ou convite so com o sim da pessoa."""
@@ -162,7 +162,7 @@ async def google_pedir(pedido: str, canal: str, destino: str) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def google_fila_proxima() -> Dict[str, Any]:
+async def google_queue_next() -> Dict[str, Any]:
     """Para a SESSAO DO CLAUDE: proximo pedido de Calendar/Drive/Gmail vindo do celular pelo modelo local (ou vazio)."""
     from core.channels import blind_bridge
 
@@ -170,7 +170,7 @@ async def google_fila_proxima() -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def google_fila_responder(id: str, resposta: str) -> Dict[str, Any]:
+async def google_queue_reply(id: str, resposta: str) -> Dict[str, Any]:
     """Para a SESSAO DO CLAUDE: entrega a resposta curta (texto simples) de um pedido do Google ao canal de origem."""
     from core.channels import blind_bridge
 
@@ -178,17 +178,17 @@ async def google_fila_responder(id: str, resposta: str) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def canal_proxima() -> Dict[str, Any]:
+async def channel_next() -> Dict[str, Any]:
     """Para a SESSAO DO CLAUDE dos canais: pega o proximo pedido da pessoa vindo do Telegram/WhatsApp (ja com audio transcrito,
     foto descrita, video e documentos entendidos; os arquivos ficam no caminho indicado). Devolve id, canal, pedido e se veio em
-    voz; ou {vazio: true}. Responda SEMPRE com canal_responder usando o mesmo id."""
+    voz; ou {vazio: true}. Responda SEMPRE com channel_reply usando o mesmo id."""
     from core.channels import blind_bridge
 
     return blind_bridge.proxima() or {"vazio": True}
 
 
 @mcp.tool()
-async def canal_responder(id: str, resposta: str, audio: Optional[bool] = None) -> Dict[str, Any]:
+async def channel_reply(id: str, resposta: str, audio: Optional[bool] = None) -> Dict[str, Any]:
     """Para a SESSAO DO CLAUDE dos canais: entrega a resposta ao canal de origem do pedido `id`. Texto simples, curto, sem markdown
     (a pessoa e cega). `audio` omitido = responde em voz quando a pessoa mandou voz; true forca voz; false forca texto."""
     from core.channels import blind_bridge
@@ -197,16 +197,16 @@ async def canal_responder(id: str, resposta: str, audio: Optional[bool] = None) 
 
 
 @mcp.tool()
-async def canal_enviar_arquivo(id: str, caminho: str, legenda: str = "") -> Dict[str, Any]:
+async def channel_send_file(id: str, caminho: str, legenda: str = "") -> Dict[str, Any]:
     """Para a SESSAO DO CLAUDE dos canais: envia um arquivo do computador (ate 45 MB) a pessoa, no canal do pedido `id`. So vai para
-    a propria pessoa, nunca para outro destino. Depois chame canal_responder para fechar o pedido."""
+    a propria pessoa, nunca para outro destino. Depois chame channel_reply para fechar o pedido."""
     from core.channels import blind_bridge
 
     return await blind_bridge.enviar_arquivo_do_pedido(id, caminho, legenda)
 
 
 @mcp.tool()
-async def canais_configurar(cerebro: str = "", voz_espelho: Optional[bool] = None) -> Dict[str, Any]:
+async def channels_configure(cerebro: str = "", voz_espelho: Optional[bool] = None) -> Dict[str, Any]:
     """Ajusta os canais do celular. cerebro: 'claude' (sessao trancada do Claude, com reserva local) ou 'local' (so o modelo do
     backend). voz_espelho: responder em voz quando a pessoa mandar voz. Sem argumentos, mostra o estado."""
     from core.channels import blind_bridge as bb
@@ -258,7 +258,7 @@ def _resolve_contact(ref: str, app: str = "telegram") -> tuple:
     for nick, cid in _load_contacts(app).items():
         if _fold_nick(nick) == folded:
             return cid, nick
-    raise ValueError(f"Nao ha contato com o apelido '{r}' no {app}. Use contato_listar ou informe o numero.")
+    raise ValueError(f"Nao ha contato com o apelido '{r}' no {app}. Use contact_list ou informe o numero.")
 
 
 def _fold_nick(s: str) -> str:
@@ -268,7 +268,7 @@ def _fold_nick(s: str) -> str:
 
 
 @mcp.tool()
-async def contato_salvar(apelido: str, chat_id: str, app: str = "telegram") -> Dict[str, Any]:
+async def contact_save(apelido: str, chat_id: str, app: str = "telegram") -> Dict[str, Any]:
     """Guarda um apelido para depois mandar mensagem dizendo so o apelido. app='telegram': chat_id numerico (ex: apelido 'mae',
     chat_id '123456'). app='whatsapp': chat_id e o telefone com DDD OU o nome de um contato do celular (ex: apelido
     'minha mulher', chat_id 'Mozao'). Use para parentesco: quando a pessoa disser 'mozao e minha mulher', guarde assim."""
@@ -291,14 +291,14 @@ async def contato_salvar(apelido: str, chat_id: str, app: str = "telegram") -> D
 
 
 @mcp.tool()
-async def contato_listar(app: str = "telegram") -> Dict[str, Any]:
+async def contact_list(app: str = "telegram") -> Dict[str, Any]:
     """Lista os apelidos de contatos salvos (app='telegram' ou 'whatsapp')."""
     data = _load_contacts(app)
     return {"ok": True, "app": app, "total": len(data), "contatos": [{"apelido": k, "chat_id": v} for k, v in data.items()]}
 
 
 @mcp.tool()
-async def contato_remover(apelido: str, app: str = "telegram") -> Dict[str, Any]:
+async def contact_remove(apelido: str, app: str = "telegram") -> Dict[str, Any]:
     """Remove um apelido de contato salvo (app='telegram' ou 'whatsapp')."""
     data = _load_contacts(app)
     folded = _fold_nick(apelido)
@@ -367,12 +367,12 @@ def _wa_resolve(ref: str) -> tuple:
     if len(achados) > 1:
         raise ValueError("Mais de um contato com esse nome: " + "; ".join(_wa_label(c) for c in achados[:6]) +
                          ". Pergunte qual a pessoa quer e use o nome completo.")
-    raise ValueError(f"Nao achei '{ref}' nos contatos do WhatsApp nem entre os apelidos. Use whatsapp_contatos para procurar "
+    raise ValueError(f"Nao achei '{ref}' nos contatos do WhatsApp nem entre os apelidos. Use whatsapp_contacts para procurar "
                      "ou peca o telefone com DDD.")
 
 
 @mcp.tool()
-async def whatsapp_contatos(busca: str = "") -> Dict[str, Any]:
+async def whatsapp_contacts(busca: str = "") -> Dict[str, Any]:
     """Procura nos contatos do WhatsApp da pessoa (os nomes que ela salvou no celular: mae, pai, mozao...). Sem `busca`, lista
     alguns. Devolve nome e final do telefone, para a pessoa confirmar quem e. A agenda fica so neste computador. Se vier
     vazia, o WhatsApp ainda nao entregou a lista: tente de novo em um minuto."""
@@ -388,7 +388,7 @@ async def whatsapp_contatos(busca: str = "") -> Dict[str, Any]:
 @mcp.tool()
 async def whatsapp_send(para: str, text: str, codigo_confirmacao: Optional[str] = None) -> Dict[str, Any]:
     """Envia mensagem de WhatsApp, em DUAS etapas. `para` aceita o NOME como esta salvo no celular da pessoa (mae, mozao, pai...),
-    um apelido (contato_salvar app='whatsapp'), o telefone com DDD ou o `jid` de uma mensagem recebida (para responder).
+    um apelido (contact_save app='whatsapp'), o telefone com DDD ou o `jid` de uma mensagem recebida (para responder).
     Se houver mais de um contato com o nome, volta erro listando as opcoes: pergunte qual.
     1) Chame sem `codigo_confirmacao`: NADA e enviado; volta o rascunho e um codigo. Leia em voz alta o destinatario e o texto
        e pergunte 'Posso enviar?'.

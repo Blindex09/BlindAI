@@ -40,7 +40,7 @@
     },
     {
       "name": "blindtube_summarize",
-      "description": "Busca titulo, canal, duracao, capitulos e o conteudo de um video do YouTube para resumir.\n\nA pessoa nao precisa enviar o link: voce pode pesquisar antes com `blindtube_search` ou passar\numa frase de busca aqui para receber opcoes e perguntar qual ela quer.\n`modo`:\n- 'auto' (padrao): usa as legendas do YouTube quando houver, ou Whisper small local quando nao houver (ideal para o Claude).\n- 'ouvir': prepara ou baixa so o audio compacto e devolve `arquivo_audio` para modelos que ouvem audio diretamente (como o Gemini) sem usar Whisper.\n- 'whisper': transcreve diretamente pelo audio com Whisper small local.\nEm videos longos, use `continuar=true` ou `parte=2` para ler os proximos trechos.\n",
+      "description": "Busca titulo, canal, duracao, capitulos e o conteudo de um video do YouTube ou de um arquivo de audio/video\ndo computador (caminho completo) para resumir.\n\nA pessoa nao precisa enviar o link: voce pode pesquisar antes com `blindtube_search` ou passar\numa frase de busca aqui para receber opcoes e perguntar qual ela quer.\n`musica=true` (so arquivo local) desliga o filtro de voz do Whisper: use para musica cantada.\n`modo`:\n- 'auto' (padrao): usa as legendas do YouTube quando houver, ou Whisper small local quando nao houver (ideal para o Claude).\n- 'ouvir': prepara ou baixa so o audio compacto e devolve `arquivo_audio` para modelos que ouvem audio diretamente (como o Gemini) sem usar Whisper.\n- 'whisper': transcreve diretamente pelo audio com Whisper small local.\nEm videos longos, use `continuar=true` ou `parte=2` para ler os proximos trechos.\n",
       "inputSchema": {
         "properties": {
           "url": {
@@ -90,6 +90,11 @@
             ],
             "default": null,
             "title": "Fim Segundos"
+          },
+          "musica": {
+            "default": false,
+            "title": "Musica",
+            "type": "boolean"
           }
         },
         "required": [
@@ -110,6 +115,86 @@
           "result"
         ],
         "title": "blindtube_summarizeOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "blindtube_transcribe",
+      "description": "Transcreve em texto um arquivo de audio ou video do computador (caminho completo) ou um video do YouTube.\n\nNo YouTube usa as legendas quando houver; senao, e em arquivo local, usa Whisper small local.\n`musica=true` (so arquivo local) desliga o filtro de voz do Whisper: use para musica cantada,\nsenao o canto sobre o instrumental pode sair vazio. `com_tempos=true` poe marcas [MM:SS].\nEm arquivos longos, chame de novo com `continuar=true` ou informe `parte=2`.\n",
+      "inputSchema": {
+        "properties": {
+          "fonte": {
+            "title": "Fonte",
+            "type": "string"
+          },
+          "idioma": {
+            "default": "auto",
+            "title": "Idioma",
+            "type": "string"
+          },
+          "com_tempos": {
+            "default": false,
+            "title": "Com Tempos",
+            "type": "boolean"
+          },
+          "continuar": {
+            "default": false,
+            "title": "Continuar",
+            "type": "boolean"
+          },
+          "parte": {
+            "default": 0,
+            "title": "Parte",
+            "type": "integer"
+          },
+          "inicio_segundos": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Inicio Segundos"
+          },
+          "fim_segundos": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Fim Segundos"
+          },
+          "musica": {
+            "default": false,
+            "title": "Musica",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "fonte"
+        ],
+        "title": "blindtube_transcribeArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "blindtube_transcribeOutput",
         "type": "object"
       }
     },

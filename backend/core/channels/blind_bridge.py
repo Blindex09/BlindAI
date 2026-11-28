@@ -8,7 +8,7 @@ Regras de seguranca:
 - Um dono por vez (trava `canais-blind`): Claude e Electron juntos nao respondem duas vezes.
 
 Cerebro: por padrao o CLAUDE. O pedido entra numa fila (`canal_fila.json`) e a sessao trancada do Claude (pasta `canal-claude/`:
-so ferramentas do Blind + Calendar/Drive/Gmail) responde com `canal_responder`. Se a sessao nao esta viva (batimento em
+so ferramentas do Blind + Calendar/Drive/Gmail) responde com `channel_reply`. Se a sessao nao esta viva (batimento em
 `canal_claude_vivo.json`) ou nao pega o pedido a tempo, o modelo local do backend responde (reserva). Entrada de midia:
 voz, foto, video e documentos sao entendidos antes (core.channels.midia_canais). Saida: texto, voz (se a pessoa mandou voz) e arquivos.
 """
@@ -299,9 +299,9 @@ async def _entender_whatsapp(m: Dict[str, Any]) -> Tuple[str, bool]:
 
 
 CONTEXTO = ("[Canal: {canal}. A pessoa e cega e fala com voce de longe, pelo celular. Responda curto, em texto simples, sem markdown. "
-            "Calendario, Drive e Gmail NAO sao suas: para isso use a ferramenta google_pedir (canal={canal}, destino={destino}) "
+            "Calendario, Drive e Gmail NAO sao suas: para isso use a ferramenta google_request (canal={canal}, destino={destino}) "
             "e avise que a resposta chega em instantes. Enviar e-mail, criar ou apagar evento e compartilhar arquivo: peca o sim da pessoa "
-            "primeiro; so depois do sim chame google_pedir de novo, comecando o pedido com CONFIRMADO PELA PESSOA. "
+            "primeiro; so depois do sim chame google_request de novo, comecando o pedido com CONFIRMADO PELA PESSOA. "
             "Antes de enviar mensagem a terceiros, mostre o rascunho e espere o sim.]\n")
 
 

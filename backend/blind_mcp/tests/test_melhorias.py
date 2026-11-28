@@ -130,8 +130,8 @@ def test_telegram_envio_em_duas_etapas(tmp_path, monkeypatch):
             return {"ok": True}
 
     monkeypatch.setattr(channels, "telegram_manager", FakeTG())
-    asyncio.run(channels.contato_salvar("Mãe", "123"))
-    assert asyncio.run(channels.contato_listar())["total"] == 1
+    asyncio.run(channels.contact_save("Mãe", "123"))
+    assert asyncio.run(channels.contact_list())["total"] == 1
 
     rascunho = asyncio.run(channels.telegram_send("mae", "oi mae"))  # apelido sem acento/caixa
     assert rascunho["enviado"] is False and enviados == [] and "mae" in rascunho["destinatario"].lower().replace("ã", "a")
@@ -147,7 +147,7 @@ def test_telegram_envio_em_duas_etapas(tmp_path, monkeypatch):
     assert ok["enviado"] is True and enviados == [("123", "oi mae")]
     with pytest.raises(Exception):  # codigo de uso unico
         asyncio.run(channels.telegram_send("mae", "oi mae", codigo_confirmacao=code))
-    assert asyncio.run(channels.contato_remover("mae"))["removido"] is True
+    assert asyncio.run(channels.contact_remove("mae"))["removido"] is True
 
 
 # ------------------------------ lembretes ------------------------------
@@ -705,8 +705,8 @@ def test_whatsapp_send_em_duas_etapas(tmp_path, monkeypatch):
     monkeypatch.setattr(channels.whatsapp_manager, "send_text",
                         lambda text, phone="", jid="": enviados.append((text, phone, jid)) or {"ok": True, "id": "X1"})
     channels._PENDING.clear()
-    asyncio.run(channels.contato_salvar("Mozão", "(11) 99999-0001", app="whatsapp"))
-    assert asyncio.run(channels.contato_listar("telegram"))["total"] == 0  # separado do Telegram
+    asyncio.run(channels.contact_save("Mozão", "(11) 99999-0001", app="whatsapp"))
+    assert asyncio.run(channels.contact_list("telegram"))["total"] == 0  # separado do Telegram
     r1 = asyncio.run(channels.whatsapp_send("mozao", "Oi amor"))
     assert r1["enviado"] is False and enviados == [] and "5511999990001" in r1["destinatario"] and "Mozão" in r1["destinatario"]
     with pytest.raises(ValueError):  # texto diferente do rascunho
@@ -752,12 +752,12 @@ def test_whatsapp_acha_contato_pelo_nome_da_agenda_e_pelo_parentesco(tmp_path, m
     with pytest.raises(ValueError):
         channels._wa_resolve("fulano inexistente")
     # parentesco: "minha mulher" guarda o nome da agenda; depois o envio entende
-    out = asyncio.run(channels.contato_salvar("minha mulher", "Mozão", app="whatsapp"))
+    out = asyncio.run(channels.contact_save("minha mulher", "Mozão", app="whatsapp"))
     assert out["chat_id"] == "5511999990002"
     assert channels._wa_resolve("minha mulher")[0] == "5511999990002"
     r = asyncio.run(channels.whatsapp_send("minha mulher", "Oi"))
     assert "minha mulher" in r["destinatario"] and enviados == []  # rascunho primeiro
     asyncio.run(channels.whatsapp_send("minha mulher", "Oi", r["codigo_confirmacao"]))
     assert enviados == [("5511999990002", "")]
-    achados = asyncio.run(channels.whatsapp_contatos("mae"))
+    achados = asyncio.run(channels.whatsapp_contacts("mae"))
     assert achados["total"] == 1 and achados["contatos"][0]["final_telefone"] == "0003"

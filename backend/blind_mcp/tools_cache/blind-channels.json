@@ -215,11 +215,11 @@
       }
     },
     {
-      "name": "canais_vincular_telegram",
+      "name": "channels_link_telegram",
       "description": "Gera o codigo de 6 digitos para a pessoa vincular o chat dela ao bot do Telegram (vale 10 min, uso unico). Ela envia\n`/vincular CODIGO` ao bot e, a partir dai, o Blind responde so a ela naquele chat. So chame se a pessoa pedir.",
       "inputSchema": {
         "properties": {},
-        "title": "canais_vincular_telegramArguments",
+        "title": "channels_link_telegramArguments",
         "type": "object"
       },
       "outputSchema": {
@@ -233,12 +233,12 @@
         "required": [
           "result"
         ],
-        "title": "canais_vincular_telegramOutput",
+        "title": "channels_link_telegramOutput",
         "type": "object"
       }
     },
     {
-      "name": "google_pedir",
+      "name": "google_request",
       "description": "Passa um pedido de Calendar, Drive ou Gmail a sessao do Google (o Blind nao tem esses conectores). A resposta chega depois,\nsozinha, pelo canal de origem. `canal` e 'telegram' ou 'whatsapp' e `destino` o que a mensagem de contexto informou. Descreva o\npedido completo e sem segredos. Enviar e-mail ou convite so com o sim da pessoa.",
       "inputSchema": {
         "properties": {
@@ -260,7 +260,7 @@
           "canal",
           "destino"
         ],
-        "title": "google_pedirArguments",
+        "title": "google_requestArguments",
         "type": "object"
       },
       "outputSchema": {
@@ -274,16 +274,16 @@
         "required": [
           "result"
         ],
-        "title": "google_pedirOutput",
+        "title": "google_requestOutput",
         "type": "object"
       }
     },
     {
-      "name": "google_fila_proxima",
+      "name": "google_queue_next",
       "description": "Para a SESSAO DO CLAUDE: proximo pedido de Calendar/Drive/Gmail vindo do celular pelo modelo local (ou vazio).",
       "inputSchema": {
         "properties": {},
-        "title": "google_fila_proximaArguments",
+        "title": "google_queue_nextArguments",
         "type": "object"
       },
       "outputSchema": {
@@ -297,12 +297,12 @@
         "required": [
           "result"
         ],
-        "title": "google_fila_proximaOutput",
+        "title": "google_queue_nextOutput",
         "type": "object"
       }
     },
     {
-      "name": "google_fila_responder",
+      "name": "google_queue_reply",
       "description": "Para a SESSAO DO CLAUDE: entrega a resposta curta (texto simples) de um pedido do Google ao canal de origem.",
       "inputSchema": {
         "properties": {
@@ -319,7 +319,7 @@
           "id",
           "resposta"
         ],
-        "title": "google_fila_responderArguments",
+        "title": "google_queue_replyArguments",
         "type": "object"
       },
       "outputSchema": {
@@ -333,16 +333,16 @@
         "required": [
           "result"
         ],
-        "title": "google_fila_responderOutput",
+        "title": "google_queue_replyOutput",
         "type": "object"
       }
     },
     {
-      "name": "canal_proxima",
-      "description": "Para a SESSAO DO CLAUDE dos canais: pega o proximo pedido da pessoa vindo do Telegram/WhatsApp (ja com audio transcrito,\nfoto descrita, video e documentos entendidos; os arquivos ficam no caminho indicado). Devolve id, canal, pedido e se veio em\nvoz; ou {vazio: true}. Responda SEMPRE com canal_responder usando o mesmo id.",
+      "name": "channel_next",
+      "description": "Para a SESSAO DO CLAUDE dos canais: pega o proximo pedido da pessoa vindo do Telegram/WhatsApp (ja com audio transcrito,\nfoto descrita, video e documentos entendidos; os arquivos ficam no caminho indicado). Devolve id, canal, pedido e se veio em\nvoz; ou {vazio: true}. Responda SEMPRE com channel_reply usando o mesmo id.",
       "inputSchema": {
         "properties": {},
-        "title": "canal_proximaArguments",
+        "title": "channel_nextArguments",
         "type": "object"
       },
       "outputSchema": {
@@ -356,12 +356,12 @@
         "required": [
           "result"
         ],
-        "title": "canal_proximaOutput",
+        "title": "channel_nextOutput",
         "type": "object"
       }
     },
     {
-      "name": "canal_responder",
+      "name": "channel_reply",
       "description": "Para a SESSAO DO CLAUDE dos canais: entrega a resposta ao canal de origem do pedido `id`. Texto simples, curto, sem markdown\n(a pessoa e cega). `audio` omitido = responde em voz quando a pessoa mandou voz; true forca voz; false forca texto.",
       "inputSchema": {
         "properties": {
@@ -390,7 +390,7 @@
           "id",
           "resposta"
         ],
-        "title": "canal_responderArguments",
+        "title": "channel_replyArguments",
         "type": "object"
       },
       "outputSchema": {
@@ -404,13 +404,13 @@
         "required": [
           "result"
         ],
-        "title": "canal_responderOutput",
+        "title": "channel_replyOutput",
         "type": "object"
       }
     },
     {
-      "name": "canal_enviar_arquivo",
-      "description": "Para a SESSAO DO CLAUDE dos canais: envia um arquivo do computador (ate 45 MB) a pessoa, no canal do pedido `id`. So vai para\na propria pessoa, nunca para outro destino. Depois chame canal_responder para fechar o pedido.",
+      "name": "channel_send_file",
+      "description": "Para a SESSAO DO CLAUDE dos canais: envia um arquivo do computador (ate 45 MB) a pessoa, no canal do pedido `id`. So vai para\na propria pessoa, nunca para outro destino. Depois chame channel_reply para fechar o pedido.",
       "inputSchema": {
         "properties": {
           "id": {
@@ -431,7 +431,7 @@
           "id",
           "caminho"
         ],
-        "title": "canal_enviar_arquivoArguments",
+        "title": "channel_send_fileArguments",
         "type": "object"
       },
       "outputSchema": {
@@ -445,12 +445,12 @@
         "required": [
           "result"
         ],
-        "title": "canal_enviar_arquivoOutput",
+        "title": "channel_send_fileOutput",
         "type": "object"
       }
     },
     {
-      "name": "canais_configurar",
+      "name": "channels_configure",
       "description": "Ajusta os canais do celular. cerebro: 'claude' (sessao trancada do Claude, com reserva local) ou 'local' (so o modelo do\nbackend). voz_espelho: responder em voz quando a pessoa mandar voz. Sem argumentos, mostra o estado.",
       "inputSchema": {
         "properties": {
@@ -491,7 +491,7 @@
       }
     },
     {
-      "name": "contato_salvar",
+      "name": "contact_save",
       "description": "Guarda um apelido para depois mandar mensagem dizendo so o apelido. app='telegram': chat_id numerico (ex: apelido 'mae',\nchat_id '123456'). app='whatsapp': chat_id e o telefone com DDD OU o nome de um contato do celular (ex: apelido\n'minha mulher', chat_id 'Mozao'). Use para parentesco: quando a pessoa disser 'mozao e minha mulher', guarde assim.",
       "inputSchema": {
         "properties": {
@@ -513,7 +513,7 @@
           "apelido",
           "chat_id"
         ],
-        "title": "contato_salvarArguments",
+        "title": "contact_saveArguments",
         "type": "object"
       },
       "outputSchema": {
@@ -527,12 +527,12 @@
         "required": [
           "result"
         ],
-        "title": "contato_salvarOutput",
+        "title": "contact_saveOutput",
         "type": "object"
       }
     },
     {
-      "name": "contato_listar",
+      "name": "contact_list",
       "description": "Lista os apelidos de contatos salvos (app='telegram' ou 'whatsapp').",
       "inputSchema": {
         "properties": {
@@ -542,7 +542,7 @@
             "type": "string"
           }
         },
-        "title": "contato_listarArguments",
+        "title": "contact_listArguments",
         "type": "object"
       },
       "outputSchema": {
@@ -556,12 +556,12 @@
         "required": [
           "result"
         ],
-        "title": "contato_listarOutput",
+        "title": "contact_listOutput",
         "type": "object"
       }
     },
     {
-      "name": "contato_remover",
+      "name": "contact_remove",
       "description": "Remove um apelido de contato salvo (app='telegram' ou 'whatsapp').",
       "inputSchema": {
         "properties": {
@@ -578,7 +578,7 @@
         "required": [
           "apelido"
         ],
-        "title": "contato_removerArguments",
+        "title": "contact_removeArguments",
         "type": "object"
       },
       "outputSchema": {
@@ -592,12 +592,12 @@
         "required": [
           "result"
         ],
-        "title": "contato_removerOutput",
+        "title": "contact_removeOutput",
         "type": "object"
       }
     },
     {
-      "name": "whatsapp_contatos",
+      "name": "whatsapp_contacts",
       "description": "Procura nos contatos do WhatsApp da pessoa (os nomes que ela salvou no celular: mae, pai, mozao...). Sem `busca`, lista\nalguns. Devolve nome e final do telefone, para a pessoa confirmar quem e. A agenda fica so neste computador. Se vier\nvazia, o WhatsApp ainda nao entregou a lista: tente de novo em um minuto.",
       "inputSchema": {
         "properties": {
@@ -607,7 +607,7 @@
             "type": "string"
           }
         },
-        "title": "whatsapp_contatosArguments",
+        "title": "whatsapp_contactsArguments",
         "type": "object"
       },
       "outputSchema": {
@@ -621,13 +621,13 @@
         "required": [
           "result"
         ],
-        "title": "whatsapp_contatosOutput",
+        "title": "whatsapp_contactsOutput",
         "type": "object"
       }
     },
     {
       "name": "whatsapp_send",
-      "description": "Envia mensagem de WhatsApp, em DUAS etapas. `para` aceita o NOME como esta salvo no celular da pessoa (mae, mozao, pai...),\num apelido (contato_salvar app='whatsapp'), o telefone com DDD ou o `jid` de uma mensagem recebida (para responder).\nSe houver mais de um contato com o nome, volta erro listando as opcoes: pergunte qual.\n1) Chame sem `codigo_confirmacao`: NADA e enviado; volta o rascunho e um codigo. Leia em voz alta o destinatario e o texto\n   e pergunte 'Posso enviar?'.\n2) So depois do 'sim' da pessoa, chame de novo com os mesmos para e text e o `codigo_confirmacao` (vale por 10 minutos).\n   Se a pessoa mudar o texto, comece de novo. Confirme ao final se foi enviado, sem inventar.",
+      "description": "Envia mensagem de WhatsApp, em DUAS etapas. `para` aceita o NOME como esta salvo no celular da pessoa (mae, mozao, pai...),\num apelido (contact_save app='whatsapp'), o telefone com DDD ou o `jid` de uma mensagem recebida (para responder).\nSe houver mais de um contato com o nome, volta erro listando as opcoes: pergunte qual.\n1) Chame sem `codigo_confirmacao`: NADA e enviado; volta o rascunho e um codigo. Leia em voz alta o destinatario e o texto\n   e pergunte 'Posso enviar?'.\n2) So depois do 'sim' da pessoa, chame de novo com os mesmos para e text e o `codigo_confirmacao` (vale por 10 minutos).\n   Se a pessoa mudar o texto, comece de novo. Confirme ao final se foi enviado, sem inventar.",
       "inputSchema": {
         "properties": {
           "para": {

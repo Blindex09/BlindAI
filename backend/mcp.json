@@ -88,7 +88,7 @@
       "lazy": true
     },
     "blind-tube": {
-      "description": "BlindTube (blindtube_search, blindtube_summarize, blindtube_download, blindtube_convert_audio, blindtube_info): pesquisa e resume videos do YouTube (sem precisar de link), baixa videos para a pasta Videos e converte videos do YouTube ou locais para audio (mp3, m4a, wav, ogg, opus, flac).",
+      "description": "BlindTube (blindtube_search, blindtube_summarize, blindtube_transcribe, blindtube_download, blindtube_convert_audio, blindtube_info): pesquisa e resume videos do YouTube (sem precisar de link), baixa videos para a pasta Videos e converte videos do YouTube ou locais para audio (mp3, m4a, wav, ogg, opus, flac).",
       "command": "${PYTHON}",
       "args": [
         "-m",

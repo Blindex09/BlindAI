@@ -1,6 +1,7 @@
-"""Servidor MCP: blindtube, para pesquisar, resumir, baixar e converter videos do YouTube.
+"""Servidor MCP: blindtube, para pesquisar, resumir, transcrever, baixar e converter videos do YouTube e audios locais.
 
-Ferramentas: blindtube_search, blindtube_summarize, blindtube_download, blindtube_convert_audio e blindtube_info.
+Ferramentas: blindtube_search, blindtube_summarize, blindtube_transcribe, blindtube_download,
+blindtube_convert_audio e blindtube_info.
 A pessoa NAO precisa mandar link: quando pedir por nome ou assunto, pesquise com `blindtube_search`,
 leia as opcoes para ela escolher e depois resuma, baixe ou converta o escolhido.
 Reutiliza as regras de gravacao segura do Blind (Downloads, Documentos, Musicas e Videos) e
@@ -40,11 +41,14 @@ async def blindtube_summarize(
     modo: str = "auto",
     inicio_segundos: Optional[float] = None,
     fim_segundos: Optional[float] = None,
+    musica: bool = False,
 ) -> Dict[str, Any]:
-    """Busca titulo, canal, duracao, capitulos e o conteudo de um video do YouTube para resumir.
+    """Busca titulo, canal, duracao, capitulos e o conteudo de um video do YouTube ou de um arquivo de audio/video
+    do computador (caminho completo) para resumir.
 
     A pessoa nao precisa enviar o link: voce pode pesquisar antes com `blindtube_search` ou passar
     uma frase de busca aqui para receber opcoes e perguntar qual ela quer.
+    `musica=true` (so arquivo local) desliga o filtro de voz do Whisper: use para musica cantada.
     `modo`:
     - 'auto' (padrao): usa as legendas do YouTube quando houver, ou Whisper small local quando nao houver (ideal para o Claude).
     - 'ouvir': prepara ou baixa so o audio compacto e devolve `arquivo_audio` para modelos que ouvem audio diretamente (como o Gemini) sem usar Whisper.
@@ -62,6 +66,40 @@ async def blindtube_summarize(
         modo,
         inicio_segundos,
         fim_segundos,
+        musica,
+    )
+
+
+@mcp.tool()
+async def blindtube_transcribe(
+    fonte: str,
+    idioma: str = "auto",
+    com_tempos: bool = False,
+    continuar: bool = False,
+    parte: int = 0,
+    inicio_segundos: Optional[float] = None,
+    fim_segundos: Optional[float] = None,
+    musica: bool = False,
+) -> Dict[str, Any]:
+    """Transcreve em texto um arquivo de audio ou video do computador (caminho completo) ou um video do YouTube.
+
+    No YouTube usa as legendas quando houver; senao, e em arquivo local, usa Whisper small local.
+    `musica=true` (so arquivo local) desliga o filtro de voz do Whisper: use para musica cantada,
+    senao o canto sobre o instrumental pode sair vazio. `com_tempos=true` poe marcas [MM:SS].
+    Em arquivos longos, chame de novo com `continuar=true` ou informe `parte=2`.
+    """
+    from core.tube.blindtube import transcrever_audio
+
+    return await run_blocking(
+        transcrever_audio,
+        fonte,
+        idioma,
+        com_tempos,
+        continuar,
+        parte,
+        inicio_segundos,
+        fim_segundos,
+        musica,
     )
 
 

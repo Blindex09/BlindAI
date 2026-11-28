@@ -337,7 +337,7 @@ def _recortar_com_ffmpeg(
     if not ff:
         return None
     out_wav = str(Path(tmp_dir) / "trecho.wav")
-    cmd = [ff, "-y", "-loglevel", "error"]
+    cmd = [ff, "-nostdin", "-y", "-loglevel", "error"]
     if ini is not None:
         cmd += ["-ss", str(ini)]
     cmd += ["-i", path]
@@ -347,6 +347,7 @@ def _recortar_com_ffmpeg(
     cmd += ["-vn", "-ac", "1", "-ar", "16000", out_wav]
     proc = subprocess.run(
         cmd,
+        stdin=subprocess.DEVNULL,
         capture_output=True,
         timeout=300,
         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
@@ -362,8 +363,11 @@ def transcribe_local_whisper(
     inicio_segundos: Optional[float] = None,
     fim_segundos: Optional[float] = None,
     model_name: Optional[str] = None,
+    musica: bool = False,
 ) -> Dict[str, Any]:
-    """Transcreve um arquivo de audio ou video local usando faster-whisper."""
+    """Transcreve um arquivo de audio ou video local usando faster-whisper.
+
+    `musica=True` desliga o filtro de voz (VAD), que descarta canto sobre instrumental."""
     ini, fim = _validar_intervalo(inicio_segundos, fim_segundos)
     lang = _normalize_idioma(idioma)
     req_model_name = (
@@ -391,7 +395,7 @@ def transcribe_local_whisper(
             target,
             language=lang,
             beam_size=5,
-            vad_filter=True,
+            vad_filter=not musica,
             condition_on_previous_text=False,
         )
         offset = ini if (used_ffmpeg_trim and ini is not None) else 0.0
@@ -844,6 +848,7 @@ def _probe_ffprobe(path: str) -> Optional[Dict[str, Any]]:
     try:
         proc = subprocess.run(
             [fp, "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", path],
+            stdin=subprocess.DEVNULL,
             capture_output=True,
             text=True,
             timeout=20,
@@ -1065,6 +1070,7 @@ def _converter_para_mp3(
     cmd += ["-vn", "-ac", "1", "-ar", "16000", "-b:a", "48k", str(tmp_out)]
     proc = subprocess.run(
         cmd,
+        stdin=subprocess.DEVNULL,
         capture_output=True,
         timeout=300,
         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
@@ -1099,8 +1105,11 @@ def transcrever_fonte(
     forcar_whisper: bool = False,
     inicio_segundos: Optional[float] = None,
     fim_segundos: Optional[float] = None,
+    musica: bool = False,
 ) -> Dict[str, Any]:
-    """Transcreve arquivo local ou video do YouTube, com cache e leitura por partes."""
+    """Transcreve arquivo local ou video do YouTube, com cache e leitura por partes.
+
+    `musica` vale so para arquivo local: desliga o filtro de voz para musica cantada."""
     src = classificar_fonte(fonte)
     ini, fim = _validar_intervalo(inicio_segundos, fim_segundos)
     idioma_norm = (idioma or "auto").strip().lower() or "auto"
@@ -1155,7 +1164,7 @@ def transcrever_fonte(
     else:
         p = Path(src["path"])
         st = p.stat()
-        key = _cache_key(("local", src["path"], st.st_size, st.st_mtime_ns, idioma_norm, active_model, ini, fim))
+        key = _cache_key(("local", src["path"], st.st_size, st.st_mtime_ns, idioma_norm, active_model, ini, fim, "musica" if musica else "fala"))
         entry = _load_cache(key)
         if entry is None:
             local_info = obter_info_local(src["path"])
@@ -1166,6 +1175,7 @@ def transcrever_fonte(
                 idioma=idioma_norm,
                 inicio_segundos=ini,
                 fim_segundos=fim,
+                musica=musica,
             )
             dur = float(local_info["duracao_segundos"] or res.get("duration_seconds") or 0.0)
             entry = {

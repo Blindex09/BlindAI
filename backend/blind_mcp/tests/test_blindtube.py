@@ -488,15 +488,79 @@ def test_comecar_habilidade_audit_blindtube():
         "mcp__blind-tube__blindtube_convert_audio",
         "mcp__blind-tube__blindtube_info",
         "mcp__blind-tube__blindtube_summarize",
+        "mcp__blind-tube__blindtube_transcribe",
     }
     assert "blindtube" in r["guia"]
 
     for tool_name in (
         "blindtube_search",
         "blindtube_summarize",
+        "blindtube_transcribe",
         "blindtube_download",
         "blindtube_convert_audio",
         "blindtube_info",
     ):
         h = _audit.humanize({"server": "blind-tube", "tool": tool_name, "ok": True, "terminou": True, "ms": 25})
         assert h["origem"] == "BlindTube" and h["estado"] == "deu_certo"
+
+
+# ----------------------------------------------------------------------------- ffmpeg sem stdin, audio local e musica
+def test_ffmpeg_da_conversao_nao_herda_o_stdin_do_servidor(tmp_path, monkeypatch):
+    """Regressao: o ffmpeg herdava o stdin do servidor (canal do MCP) e a conversao travava."""
+    chamadas = {}
+
+    def fake_run(cmd, **kw):
+        chamadas["cmd"] = cmd
+        chamadas["kw"] = kw
+        Path(cmd[-1]).write_bytes(b"mp3")
+        return types.SimpleNamespace(returncode=0, stderr=b"")
+
+    monkeypatch.setattr(blindtube.subprocess, "run", fake_run)
+    blindtube._executar_ffmpeg_audio("ffmpeg", "entrada.m4a", tmp_path / "saida.mp3", ["-c:a", "libmp3lame"], None, None)
+
+    assert chamadas["kw"]["stdin"] is blindtube.subprocess.DEVNULL
+    assert "-nostdin" in chamadas["cmd"]
+
+
+def _falso_whisper(monkeypatch, usos):
+    class FakeModel:
+        def transcribe(self, target, **kw):
+            usos.append(kw)
+            seg = types.SimpleNamespace(start=0.0, end=2.0, text="canto na musica")
+            return iter([seg]), types.SimpleNamespace(language="pt", language_probability=0.9, duration=2.0)
+
+    monkeypatch.setattr(blindaudio, "get_whisper_model", lambda model_name=None: FakeModel())
+
+
+def test_blindtube_transcribe_e_summarize_aceitam_arquivo_local_e_musica(tmp_path, monkeypatch):
+    monkeypatch.setattr(blindaudio, "CACHE_DIR", tmp_path / "cache", raising=False)
+    usos: list = []
+    _falso_whisper(monkeypatch, usos)
+    wav = _write_wav(tmp_path / "musica.wav")
+
+    r = asyncio.run(tube.blindtube_transcribe(str(wav), idioma="pt", musica=True))
+    assert r["ok"] is True and "canto na musica" in r["texto"]
+    assert usos[-1]["vad_filter"] is False
+
+    r2 = asyncio.run(tube.blindtube_transcribe(str(wav), idioma="pt"))
+    assert usos[-1]["vad_filter"] is True and "canto na musica" in r2["texto"]
+
+    r3 = asyncio.run(tube.blindtube_summarize(str(wav), idioma="pt", musica=True))
+    assert "canto na musica" in r3["texto"] and r3["instrucoes_resumo"]
+    with pytest.raises(ValueError, match="so vale para videos do YouTube"):
+        asyncio.run(tube.blindtube_summarize(str(wav), modo="ouvir"))
+
+
+def test_transcrever_recusa_audio_que_nao_cabe_no_limite_e_aceita_trecho(tmp_path, monkeypatch):
+    monkeypatch.setattr(blindaudio, "CACHE_DIR", tmp_path / "cache", raising=False)
+    usos: list = []
+    _falso_whisper(monkeypatch, usos)
+    wav = _write_wav(tmp_path / "longo.wav")
+    monkeypatch.setattr(blindaudio, "obter_info_local", lambda p: {"duracao_segundos": 1800.0, "tem_audio": True})
+
+    with pytest.raises(ValueError, match="grande demais"):
+        asyncio.run(tube.blindtube_transcribe(str(wav)))
+    assert usos == []
+
+    r = asyncio.run(tube.blindtube_transcribe(str(wav), inicio_segundos=0, fim_segundos=120))
+    assert r["ok"] is True
